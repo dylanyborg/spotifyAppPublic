@@ -11,27 +11,36 @@
     <!-- Use a component to display each song on the view --> 
     <div>
         Songs go here 
-        <form method="GET" action="{{ route('queueTrack') }}">
-            @csrf
-
         
+
             <table>
-                @foreach ($tracks->track as $track)
-                    
+                @foreach ($tracks as $tracks)
                     <tr>
-                        <td style="padding: 5px"> 
-                            <x-queue-button>
-                                Queue  
-                            </x-queue-button>
-                            
+                        <td>
+                            <a href=" {{ route('queueTrack', ['trackid' => $tracks->track->id]) }}">
+                                Queue
+                            </a>
                         </td>
-                        <td> {{ $track->name }} </td>
-                        <td> {{ $track->artists[0]->name}} </td>
+                        <td>
+                            {{ $tracks->track->name }}
+                        </td>
+                        <td>
+                            {{ $tracks->track->artists[0]->name }}
+                        </td>
                     </tr>
                 @endforeach
             </table>
 
-        </form>
+        
+        
+
+      
+
+
+
+        
+
+        
         
     </div>
 
