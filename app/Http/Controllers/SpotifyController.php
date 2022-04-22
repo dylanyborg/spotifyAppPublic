@@ -272,18 +272,22 @@ class SpotifyController extends Controller
     }
 
     public function queueSong(Request $request){
+        //Log::debug('in queue song')
+        //dd("in queue song function");
         //dd($trackid);
         //will be able to pass a param userid to queue songs to a certain user
         if(Auth::check()){ //if user is logged in
             $userid = Auth::id(); //get the userID
             
             $songid = $request->input('songid');
-            dd($songid);
+            //dd($songid);
 
             QueueSong::dispatch($songid, $userid);
         }
 
-        return;
+        return \Response::json("success");
+
+        //return;
 
 
     }
