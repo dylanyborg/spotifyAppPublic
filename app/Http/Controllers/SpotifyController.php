@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\QueueSong;
 use App\Models\User; //can update db usinf the user model
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 //use Illuminate\Support\Facades\Http;
 
 require '../vendor/autoload.php';
@@ -56,6 +58,9 @@ class SpotifyController extends Controller
                     'playlist-read-private',
                     'user-read-playback-state',
                     'user-library-read',
+                    'user-modify-playback-state',
+                    'user-read-playback-state',
+                    'user-read-currently-playing',
 
                 ],
                 'state' => $state,
@@ -266,8 +271,21 @@ class SpotifyController extends Controller
         return $userApi;
     }
 
-    public function queueSong($trackid){
-        dd($trackid);
+    public function queueSong(Request $request){
+        //dd($trackid);
+        //will be able to pass a param userid to queue songs to a certain user
+        if(Auth::check()){ //if user is logged in
+            $userid = Auth::id(); //get the userID
+            
+            $songid = $request->input('songid');
+            dd($songid);
+
+            QueueSong::dispatch($songid, $userid);
+        }
+
+        return;
+
+
     }
 
     //function to get spotiofy user information

@@ -39,7 +39,10 @@ Route::get('/callback', [SpotifyController::class, 'callback']);
 Route::get('/spotifyController/userLibrary', [SpotifyController::class, 'loadUserLibrary'])
     ->name('userLibrary.show');
 
-Route::get('/spotifyController/userLibrary/queue/{trackid}', [SpotifyController::class, 'queueSong'])
+//Route::get('/spotifyController/userLibrary/queue/{trackid}', [SpotifyController::class, 'queueSong'])
+//->name('queueTrack');
+
+Route::post('/spotifyController/userLibrary/queue', [SpotifyController::class, 'queueSong'])
 ->name('queueTrack');
 
 require __DIR__.'/auth.php';
