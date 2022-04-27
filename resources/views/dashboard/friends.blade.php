@@ -20,8 +20,6 @@
                             </x-button>
                         </div>
                     </form>
-
-                    <a href="{{ route('party.create')}}"> Create Party</a>
                     
                 </div>
             </div>
