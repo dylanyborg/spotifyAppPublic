@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Party;
 
 return new class extends Migration
 {
@@ -22,6 +23,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('spotifyUserAccessToken')->nullable();
             $table->string('spotifyUserRefreshToken')->nullable();
+            $table->foreignIdFor(Party::class)->onDelete('set null')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

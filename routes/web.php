@@ -52,12 +52,14 @@ Route::get('/spotifyController/search', [SpotifyController::class, 'search'])
 ->name('search.index');
 
 /*
-    Dashboard routes
+    Party routes
 */
 
-//party
+//set the party join named route before the resource base routes
+Route::post('/dashboard/party/join', [PartyController::class, 'join'])
+->name('party.join');
 
-//index the party
+//party resource controller
 Route::resource('/dashboard/party', PartyController::class);
 
 //create a party

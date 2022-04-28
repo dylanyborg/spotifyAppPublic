@@ -19,6 +19,7 @@ return new class extends Migration
                 ->onDelete('cascade');// deleted the party when the host user is deleted
             $table->string('partyName')->unique();
             $table->string('password');
+            $table->boolean('hideHostLibrary');
             $table->timestamps();
         });
     }

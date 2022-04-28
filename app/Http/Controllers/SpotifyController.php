@@ -137,6 +137,9 @@ class SpotifyController extends Controller
         //dd($api->me());
         $usersName = $api->me()->display_name;
 
+        //allow spotify top load the users library
+        session(['spotifyApiUserId' => $userID]);
+
         //fetch users spotify lib
         //$tracks = $api->getMySavedTracks();
 
@@ -151,10 +154,24 @@ class SpotifyController extends Controller
 
     public function loadUserLibrary(Request $request){
 
+        //before loading the host library, make sure the party setting allow it
+
 
         $userID;
         if(Auth::check()){ //if user is logged in
-            $userID = Auth::id(); //get the userID
+
+            $apiUser;
+            //get the user id of the correct api to use form a session
+            //'spotifyApiUserId = the user_id of the current api to use (host or current user)
+            if($request->session()->has('spotifyApiUserId')){
+                $apiUser = session('spotifyApiUserId'); //will be user or host id
+            }
+            //this session var is set when logging in, connecting spotyiy, or joingn party
+            //if no session var is set, user cannot view any libraries or playlists
+            else{
+                //go to the search page
+                return redirect()->route('search.index');
+            }
             
             //if all songs loaded, do nothing
             if(  $request->session()->has('userLibrary')){
@@ -163,9 +180,9 @@ class SpotifyController extends Controller
                     return view('spotifyRemoteControl/userLibrary', ['tracks' => session('userLibrary')]);
                 }
             }
-            //@param userID is the current user
+            //@param apiUser is user id for tokens to use
             //return the api to be used for spotifyWebApi calls
-            $spotifyInfo = $this->getApi($userID);
+            $spotifyInfo = $this->getApi($apiUser);
 
             $spotifyApi = $spotifyInfo[0];
             $spotifySession = $spotifyInfo[1];
@@ -194,7 +211,7 @@ class SpotifyController extends Controller
             
 
             //refresh tokens in db/session ********
-            $this->refreshTokens($spotifyApi, $spotifySession, $userID);
+            $this->refreshTokens($spotifyApi, $spotifySession, $apiUser);
 
             $numberOfSongsLoaded = count($newTracks->items);
             $updatedTracks;
@@ -298,12 +315,16 @@ class SpotifyController extends Controller
         //dd($trackid);
         //will be able to pass a param userid to queue songs to a certain user
         if(Auth::check()){ //if user is logged in
-            $userid = Auth::id(); //get the userID
+            //get the host id
+            $user = User::find(Auth::id());
+
+            $hostid = $user->party->host_id;
             
             $songid = $request->input('songid');
             //dd($songid);
 
-            QueueSong::dispatch($songid, $userid);
+            QueueSong::dispatch($songid, $hostid); //only want to queue a song to the host
+            //if the hsot is queueing a song it acts the same way since they are in the party
         }
 
         return \Response::json("success");

@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'spotifyUserAccessToken',
         'spotifyUserRefreshToken',
+        'party_id',
     ];
 
     /**
@@ -50,7 +51,7 @@ class User extends Authenticatable
         return $this->hasOne(Party::class, 'host_id');
     }
 
-    public function parties() {
+    public function party() {
         return $this->belongsTo(Party::class);
     }
 

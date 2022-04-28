@@ -22,6 +22,14 @@
                      <p> {{ $party->partyName }} </p>
 
                      {{ $party->host_id }}
+
+                     
+
+                     <p>
+                         hiding hose lib?: <br>
+                        {{ $party->hideHostLibrary }}
+
+                     </p>
                     
                 </div>
             </div>

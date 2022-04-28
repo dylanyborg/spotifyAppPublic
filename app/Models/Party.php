@@ -24,6 +24,7 @@ class Party extends Model
         'host_id',
         'partyName',
         'password',
+        'hideHostLibrary',
         
     ];
 
