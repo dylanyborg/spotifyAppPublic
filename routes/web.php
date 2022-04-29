@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\SpotifyController;
+use App\Http\Controllers\PartyController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -20,8 +22,9 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+    return redirect()->route('party.index');
+
+})->middleware(['auth'])->name('party');
 
 /*
 grouping contorllers together for easier syntax
@@ -37,9 +40,36 @@ Route::get('/callback', [SpotifyController::class, 'callback']);
 
 //spotify web api call functions
 Route::get('/spotifyController/userLibrary', [SpotifyController::class, 'loadUserLibrary'])
-    ->name('userLibrary.show');
+->middleware(['auth'])->name('userLibrary.show');
 
-Route::get('/spotifyController/userLibrary/queue/{trackid}', [SpotifyController::class, 'queueSong'])
+Route::post('/spotifyController/userLibrary/queue', [SpotifyController::class, 'queueSong'])
 ->name('queueTrack');
+
+/*
+search spotify routes
+
+*/
+Route::get('/spotifyController/search', [SpotifyController::class, 'search'])
+->name('search.index');
+
+/*
+    Party routes
+*/
+
+//set the party join named route before the resource base routes
+Route::post('/dashboard/party/join', [PartyController::class, 'join'])
+->name('party.join');
+
+Route::post('/dashboard/party/leave', [PartyController::class, 'leave'])
+->name('party.leave');
+
+//party resource controller
+Route::resource('/dashboard/party', PartyController::class);
+
+//create a party
+//Route::resource('dashboardparty/')
+
+
+
 
 require __DIR__.'/auth.php';

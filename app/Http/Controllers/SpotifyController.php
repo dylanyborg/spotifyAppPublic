@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\QueueSong;
 use App\Models\User; //can update db usinf the user model
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 //use Illuminate\Support\Facades\Http;
 
 require '../vendor/autoload.php';
@@ -56,6 +58,9 @@ class SpotifyController extends Controller
                     'playlist-read-private',
                     'user-read-playback-state',
                     'user-library-read',
+                    'user-modify-playback-state',
+                    'user-read-playback-state',
+                    'user-read-currently-playing',
 
                 ],
                 'state' => $state,
@@ -132,6 +137,9 @@ class SpotifyController extends Controller
         //dd($api->me());
         $usersName = $api->me()->display_name;
 
+        //allow spotify top load the users library
+        session(['spotifyApiUserId' => $userID]);
+
         //fetch users spotify lib
         //$tracks = $api->getMySavedTracks();
 
@@ -146,20 +154,38 @@ class SpotifyController extends Controller
 
     public function loadUserLibrary(Request $request){
 
+        //before loading the host library, make sure the party setting allow it
+
+
         $userID;
         if(Auth::check()){ //if user is logged in
-            $userID = Auth::id(); //get the userID
+
+            $apiUser;
+            //get the user id of the correct api to use form a session
+            //'spotifyApiUserId = the user_id of the current api to use (host or current user)
+            if($request->session()->has('spotifyApiUserId')){
+                $apiUser = session('spotifyApiUserId'); //will be user or host id
+            }
+            //this session var is set when logging in, connecting spotyiy, or joingn party
+            //if no session var is set, user cannot view any libraries or playlists
+            else{
+                //go to the search page
+                return redirect()->route('search.index');
+            }
             
             //if all songs loaded, do nothing
             if(  $request->session()->has('userLibrary')){
                 if(session('allUserLibLoaded') == 1){
                     //return to the lib page
-                    return view('trackListViews/userLibrary', ['tracks' => session('userLibrary')]);
+                    return view('spotifyRemoteControl/userLibrary', ['tracks' => session('userLibrary')]);
                 }
             }
-            //@param userID is the current user
+            //@param apiUser is user id for tokens to use
             //return the api to be used for spotifyWebApi calls
-            $api = $this->refreshTokens($userID);
+            $spotifyInfo = $this->getApi($apiUser);
+
+            $spotifyApi = $spotifyInfo[0];
+            $spotifySession = $spotifyInfo[1];
 
             //check if all songs loaded
             //check if any songs are loaded
@@ -177,7 +203,7 @@ class SpotifyController extends Controller
             //load user tracks, using the number oif songs loaded as the offset
             //refresh the tokens
 
-            $newTracks = $api->getMySavedTracks([
+            $newTracks = $spotifyApi->getMySavedTracks([
                 'limit' => 50,
                 'offset' => $existingNumberOfSongs,
             ]);
@@ -185,6 +211,7 @@ class SpotifyController extends Controller
             
 
             //refresh tokens in db/session ********
+            $this->refreshTokens($spotifyApi, $spotifySession, $apiUser);
 
             $numberOfSongsLoaded = count($newTracks->items);
             $updatedTracks;
@@ -216,14 +243,14 @@ class SpotifyController extends Controller
 
 
             //return the userLib view and give the usersCurrentLib
-            return view('trackListViews/userLibrary', ['tracks' => $updatedTracks]);
+            return view('spotifyRemoteControl/userLibrary', ['tracks' => $updatedTracks]);
         }
 
     }
 
     //function to freshen up thyer access and reftresh tokens
     //returns an API to use to make calls
-    public function refreshTokens($userID){
+    public function getApi($userID){
         $userSession = new Session(
             '1d53c77dcd0e4cb6b6191f74e2ce6c51',
             '18e12cd385514d91a4d0aebb75e01423'
@@ -260,14 +287,115 @@ class SpotifyController extends Controller
         $options = [
             'auto_refresh' => true,
         ];
-        
+
         $userApi = new SpotifyWebAPI($options, $userSession);
 
-        return $userApi;
+        return [$userApi, $userSession];
+
+        //return $userApi;
     }
 
-    public function queueSong($trackid){
-        dd($trackid);
+    public function refreshTokens($api, $session, $userID){
+        //fetch the user
+
+        $user = User::find($userID);
+
+        //update topkej info for user
+        $user->spotifyUserAccessToken = $session->getAccessToken();
+        $user->spotifyUserRefreshToken = $session->getRefreshToken();
+
+        //save user
+        $user->save();
+
+    }
+
+    public function queueSong(Request $request){
+        //Log::debug('in queue song')
+        //dd("in queue song function");
+        //dd($trackid);
+        //will be able to pass a param userid to queue songs to a certain user
+        if(Auth::check()){ //if user is logged in
+            //get the host id
+            $user = User::find(Auth::id());
+
+            $hostid = $user->party->host_id;
+            
+            $songid = $request->input('songid');
+            //dd($songid);
+
+            QueueSong::dispatch($songid, $hostid); //only want to queue a song to the host
+            //if the hsot is queueing a song it acts the same way since they are in the party
+        }
+
+        return \Response::json("success");
+
+        //return;
+
+
+    }
+
+    public function search(Request $request){
+        //if the request does not have a searchBar variable
+        if($request->filled('search')){
+            //perform the search on the request
+            $searchQuery = $request->search;
+
+            //fetch the api for the correct user to execute the search on (host or user)
+            $userID = Auth::id(); //this should change to add a way to use the host tokens
+
+            $spotifyInfo = $this->getApi($userID);
+
+            $spotifyApi = $spotifyInfo[0];
+            $spotifySession = $spotifyInfo[1];
+
+
+            $searchResults;
+            try {
+                //search for the first 10 results for artist and track
+                $searchResults = $spotifyApi->search($searchQuery, 'track,artist', [
+                    'limit' => 10,
+                ]);
+            } catch (SpotifyWebAPI\SpotifyWebAPIException $e) {
+                dd("error:", $e);
+            }
+
+            //refresh the tokens after using them
+            
+            $this->refreshTokens($spotifyApi, $spotifySession, $userID);
+
+            //save the search query to a session variable
+            session(['lastSearchQuery' => $searchQuery]);
+            //save the results of the search into a session?
+            session(['lastSearchResults' =>$searchResults]);
+
+            //return the search results to the search view
+
+            return view('spotifyRemoteControl/search',['searchResults' => $searchResults]);
+
+
+
+            //dd("search queue requested", $request->search);
+
+        }
+        else{ //no search initaited, load search page with rpevioous search
+            //if there is a previous search
+            if($request->session()->has('lastSearchQuery')){
+                //load the view using the previous results
+                return view('spotifyRemoteControl/search',['searchResults' => session('lastSearchResults')] );
+                //dd( "loading proevious search:",session('lastSearchQuery') );
+
+            }
+            else{//else if there is no previous search
+                //load the page with just the search bar
+                return view('spotifyRemoteControl/search');
+            }
+
+        }
+
+        //dd($request->searchBar);
+
+        return view('spotifyRemoteControl/search', ['searchResults' => $searchResults]);
+
     }
 
     //function to get spotiofy user information

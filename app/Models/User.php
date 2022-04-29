@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'spotifyUserAccessToken',
         'spotifyUserRefreshToken',
+        'party_id',
     ];
 
     /**
@@ -44,4 +45,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    //get party hosted by the user
+    public function host(){
+        return $this->hasOne(Party::class, 'host_id');
+    }
+
+    public function party() {
+        return $this->belongsTo(Party::class);
+    }
+
 }
