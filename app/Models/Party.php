@@ -25,7 +25,7 @@ class Party extends Model
         'partyName',
         'password',
         'hideHostLibrary',
-        
+        'isLocked',
     ];
 
     protected $hidden = [

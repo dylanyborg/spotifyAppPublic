@@ -19,17 +19,72 @@
                 <div class="p-6 bg-white border-b border-gray-200">
                     <h1 class="text-lg"> Current Party </h1>
 
-                     <p> {{ $party->partyName }} </p>
+                    @if ($party->host_id == Auth::id())
+                        <a href="{{ route('party.edit', $party->id) }}">
+                            Edit Party
+                        </a>
+                    @endif 
 
-                     {{ $party->host_id }}
+                    
 
-                     
+                    <p> Party Name: {{ $party->partyName }} </p>
 
-                     <p>
-                         hiding hose lib?: <br>
-                        {{ $party->hideHostLibrary }}
+                    <p> Party Host: {{ $party->host->username }} </p>
 
-                     </p>
+                    
+
+                    
+                    
+
+                    <!-- Display party list -->
+                    <h2> Users in Party:</h2>
+                    <form action="{{ route('party.leave') }}" method="post">
+                        @csrf
+                        
+
+                        <table>
+                            @foreach ($party->users as $user)
+                                <tr>
+                                    <td> {{ $user->username }}</td>
+                                    <!-- If the user is the host of the party, and the current user being displayed isnt the host -->
+                                    @if ($party->host_id == Auth::id() && $user->id != Auth::id())
+                                        <td>
+                                            <x-button value="{{$user->id}}" name="leaveButton">
+                                                Kick
+                                            </x-button>
+                                            
+                                        </td>
+                                    @endif
+                                </tr>                            
+                            @endforeach
+                            
+                        </table>
+                    </form>
+
+                    @if ($party->host_id == Auth::id())
+                        <form method="POST" action="{{ route('party.destroy', $party->id) }}">
+                            @csrf
+                            @method('DELETE')
+
+                            <x-button onclick="return confirm('Are you sure you want to delete this party?');">
+                                {{ __('Delete Party')}}
+                            </x-button>
+
+                        </form>  
+                    @else
+                        <form method="POST" action="{{ route('party.leave') }}">
+                            @csrf
+                            
+
+                            <x-button name="leaveButton" value="{{ Auth::id() }}" onclick="return confirm('Are you sure you want to leave this party?');">
+                                {{ __('Leave Party')}}
+                            </x-button>
+
+                        </form>  
+
+
+                    @endif
+
                     
                 </div>
             </div>

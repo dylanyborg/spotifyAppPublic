@@ -22,7 +22,8 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route('party.index');
+
 })->middleware(['auth'])->name('party');
 
 /*
@@ -58,6 +59,9 @@ Route::get('/spotifyController/search', [SpotifyController::class, 'search'])
 //set the party join named route before the resource base routes
 Route::post('/dashboard/party/join', [PartyController::class, 'join'])
 ->name('party.join');
+
+Route::post('/dashboard/party/leave', [PartyController::class, 'leave'])
+->name('party.leave');
 
 //party resource controller
 Route::resource('/dashboard/party', PartyController::class);

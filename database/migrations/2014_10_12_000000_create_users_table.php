@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('spotifyUserAccessToken')->nullable();
             $table->string('spotifyUserRefreshToken')->nullable();
-            $table->foreignIdFor(Party::class)->onDelete('set null')->nullable();
+            //$table->foreignIdFor(Party::class)->nullable()->nullOnDelete();
             $table->rememberToken();
             $table->timestamps();
         });

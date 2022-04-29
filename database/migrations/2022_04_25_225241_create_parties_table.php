@@ -15,11 +15,12 @@ return new class extends Migration
     {
         Schema::create('parties', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('host_id')->constrained('users')
-                ->onDelete('cascade');// deleted the party when the host user is deleted
+            //$table->foreignId('host_id')->constrained('users')
+               // ->onDelete('cascade');// deleted the party when the host user is deleted
             $table->string('partyName')->unique();
             $table->string('password');
             $table->boolean('hideHostLibrary');
+            $table->boolean('isLocked');
             $table->timestamps();
         });
     }

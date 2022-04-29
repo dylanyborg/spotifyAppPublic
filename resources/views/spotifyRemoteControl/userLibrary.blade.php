@@ -11,6 +11,14 @@
         </h2>
     </x-slot>
 
+    <!-- modal popup -->
+    <div id="queueConfirmModal" class ="modal">
+
+        <div class="modal-content">
+            <p> Song Queued! </p>
+        </div>
+    </div>
+
     <!--  BODY   -->
     <!-- Use a component to display each song on the view --> 
     <div class='listOfSongs'>

@@ -45,7 +45,19 @@ class EnsureSpotifyToken
             //redirect to the join party page
             return redirect()->route('party.index');
         }
-        /*
+        
+        //make sure partyLocked (bool) isnt true
+        if($user->party->isLocked){
+            //user cannot access party privelages
+            return redirect()->route('party.index');
+        }
+        
+        //else if user is in party, ensure it is not a locked party
+            //aka hsot of party hasnt locked it
+        
+        
+        
+            /*
         else{//else user is in a party
             //if the party is set to privateLibrary
             if($user->party->hideHostLibrary){ //hideHostLib is a bool

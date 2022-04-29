@@ -17,11 +17,25 @@
                     </x-nav-link>
                 </div>
 
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-nav-link :href="route('userLibrary.show')" :active="request()->routeIs('userLibrary.show')">
-                        {{ __('Spotify Controller') }}
-                    </x-nav-link>
-                </div>
+                <!-- If the user is in a party -->
+                @if ( isset(Auth::user()->party_id) )
+                    <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                        <x-nav-link :href="route('userLibrary.show')" :active="request()->routeIs('userLibrary.show')">
+                            {{ __('Spotify Controller') }}
+                        </x-nav-link>
+                    </div>
+                    
+                @endif
+                
+                <!-- If no access token is found on user -->
+                @if ( !isset(Auth::user()->spotifyUserAccessToken) )
+                    <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                        <x-nav-link :href="route('spotifyAuth')" :active="request()->routeIs('userLibrary.show')">
+                            {{ __('Connect Spotify Account!') }}
+                        </x-nav-link>
+                    </div>
+                @endif
+                
             </div>
 
             <!-- Settings Dropdown -->

@@ -91,6 +91,7 @@ class PartyController extends Controller
             'host_id' => $userID,
             'password' => Hash::make($request->password),
             'hideHostLibrary' => $hideHostLib,
+            'isLocked' => false, //unlocked by default
         ]);
 
 
@@ -121,6 +122,12 @@ class PartyController extends Controller
         
         $party = Party::find($party);
 
+        //if no party, go to party.create
+        if(!isset($party)){
+            return redirect()->route('party.create');
+
+        }
+
         return view('dashboard/party/show', ['party' => $party]);
 
     }
@@ -131,10 +138,18 @@ class PartyController extends Controller
      * @param  \App\Models\Party  $party
      * @return \Illuminate\Http\Response
      */
-    public function edit($party)
+    public function edit($partyid)
     {
-        //
-        dd($party);
+        //find the party to edit
+        $party = Party::find($partyid);
+
+        //verufy the user is the host of the party
+        if(!isset($party)){
+            return redirect()->route('party.create');
+
+        }
+        //else return the view to edit a party and pass aloing the aprty
+        return view('dashboard/party/edit', ['party' => $party]);
     }
 
     /**
@@ -144,12 +159,66 @@ class PartyController extends Controller
      * @param  \App\Models\Party  $party
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Party $party)
+    public function update(Request $request, $partyid)
     {
+        //dd($partyid);
         //update the party info
             //name
             //password
             //hostLib
+        $party = Party::find($partyid);
+
+        //if the username hasnt changed
+            //dont validate the username within the DB
+        if($request->partyName == $party->partyName){
+            $request->validate([
+                'partyName' => ['required', 'string', 'max:60'],
+                'password' => [ 'confirmed'],
+            ]);
+        }
+        else{
+            //else the username has changed and needs checking
+            $request->validate([
+                'partyName' => ['required', 'string', 'max:60', 'unique:parties'],
+                'password' => [ 'confirmed'],
+            ]);
+        }      
+
+        //dd($request->partyName, $request->password, $request->hideHostLib);
+
+        $hideHostLib;
+        if($request->hideHostLib == "2"){
+            $hideHostLib = true; //we want to hide lib to party guests
+        }
+        else{
+            $hideHostLib = false; //show as a default as well
+        }
+
+        //update the party with the correct info
+
+        //if the party name has changed
+        if($request->partyName != $party->partyName){
+            $party->partyName = $request->partyName;
+        }
+
+        //if the password from the request is not null
+        if(isset($request->password)){
+            //if the new password and old one do not match
+            if(!Hash::check($request->password, $party->password)){
+                //passwords are different, save a hash of the new one
+                $party->password = Hash::make($request->password);
+            }
+            //else the passwords match ands there is no need to change it
+        }//else there was no password in the input
+
+        $party->hideHostLibrary = $hideHostLib;
+
+        $party->save();
+
+        //redirect to party.show
+        return redirect()->route('party.show', ['party' => $party->id]);
+
+
     }
 
     /**
@@ -158,9 +227,15 @@ class PartyController extends Controller
      * @param  \App\Models\Party  $party
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Party $party)
+    public function destroy($partyID)
     {
-        //
+        Party::destroy($partyID);
+
+        //route to the create party page
+        return redirect()->route('party.index');
+
+        
+        //dd($party);
     }
 
     //function to join a user to a party
@@ -209,5 +284,29 @@ class PartyController extends Controller
         
         
 
+    }
+
+    //function to remove a user from the party
+    public function leave(Request $request) {
+        $userToRemove = $request->leaveButton;
+
+        //update the users [party_id] to null
+        $user = User::find($userToRemove);
+
+        $user->party_id = null;
+
+        $user->save();
+
+        return redirect()->route('party.index');
+
+        //return to the party page
+        //if the hsot is kicking a user, go back to the party home page
+
+        //if a user is le;aving a party, go to the create pagew
+
+        //both of these are done by8 gpoing to index
+
+        //dd($request->kickButton);
+        //fetch the user 
     }
 }

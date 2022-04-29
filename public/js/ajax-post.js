@@ -25,6 +25,15 @@ function addToQueue(){
         headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
         success: function (data) {
             console.log("It worked" + songid);
+
+            var modal = document.getElementById("queueConfirmModal");
+            modal.style.display = "block";
+            //popup.classList.toggle("show");
+
+            setTimeout(function(){
+                modal.style.display = "none";
+            }, 3000);
+               
             
         },
         error: function() {
