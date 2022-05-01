@@ -344,7 +344,7 @@ class SpotifyController extends Controller
             $userID = Auth::id(); //this should change to add a way to use the host tokens
 
             $spotifyInfo = $this->getApi($userID);
-
+ 
             $spotifyApi = $spotifyInfo[0];
             $spotifySession = $spotifyInfo[1];
 

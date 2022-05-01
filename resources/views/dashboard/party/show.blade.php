@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2>
-            <div class="flex justify-between">
+            <div class="spotifyControllerHeader">
                 
                 <a href=" {{ route('userLibrary.show') }}">
                     Friends
@@ -23,7 +23,37 @@
                         <a href="{{ route('party.edit', $party->id) }}">
                             Edit Party
                         </a>
+
+                        <div>
+                            <form action="{{ route('party.lock', $party->id) }}" method="post">
+                                @csrf
+
+                                @if ($party->isLocked)
+                                    <x-button name="lockButton" value="{{$party->id}}">
+                                        {{ __('Unlock Party')}}
+                                    </x-button>                                                               
+                                @else
+                                    <x-button name="lockButton" value="{{$party->id}}">
+                                        {{ __('Lock Party')}}
+                                    </x-button>
+                                @endif
+
+                            </form>
+                            
+                        </div>
+                       
+                    @else 
+                        
+                        @if ($party->isLocked)
+                            <div>
+                                The party is locked
+                            </div>
+                        @endif
                     @endif 
+
+                    <!-- If the user is the host, display one of two buttons -->
+                    <!-- else if not the host, display an iomage only if the party is locked -->
+                    
 
                     
 

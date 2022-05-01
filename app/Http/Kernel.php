@@ -63,6 +63,7 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'spotifyAuth' => \App\Http\Middleware\EnsureSpotifyToken::class,
+        'spotifyParty' => \App\Http\Middleware\EnsureSpotifyParty::class,
+        'spotifyLibAccess' => \App\Http\Middleware\VerifyLibraryToView::class,
     ];
 }
