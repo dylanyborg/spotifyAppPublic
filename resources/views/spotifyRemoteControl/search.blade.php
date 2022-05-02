@@ -1,25 +1,16 @@
-<x-app-layout>
-    <!--     HEADER -->
-    <x-slot name="header" >
-
-        <h2>
-            <a href=" {{ route('userLibrary.show') }}">
-                Spotify Library
-            </a>
-            <a href=" {{ route('search.index') }}">
-                search
-            </a>
-        </h2>
-    </x-slot>
-
+<x-spotify-layout>
+    
     <div>
-        <h1> Search: </h1>
+        <div class="w-full">
+            <h1> Search: </h1>
 
-        <form method="GET" action="{{ route('search.index') }}">
-
-            <input type="search" name="search" id="searchBar" placeholder="Song, Artist" aria-label="Search"/>
-            
-        </form>
+            <form method="GET" action="{{ route('search.index') }}">
+    
+                <input data="{{ session('lastSearchQuery') }}" class="w-full" type="search" name="search" id="searchBar" placeholder="Song, Artist" aria-label="Search"/>
+                
+            </form>
+        </div>
+        
 
         @isset($searchResults)
             <div class="searchResults">
@@ -52,10 +43,44 @@
                         @endforeach
                     </table>
                 </div>
+
+                <div class="searchResultArtist">
+                    <h1>
+                        Artists:
+                    </h1>
+                    <table>
+                        @foreach ($searchResults->artists->items as $artist)
+                        <tr>
+                            <td>
+                                @isset($artist->images[2]->url)
+                                    <img src="{{$artist->images[2]->url}}" alt="{{$artist->name}}" >
+                                @endisset
+                            </td>
+                            <td>
+                                {{ $artist->name }}
+                            </td>
+                        </tr>
+                            
+                        @endforeach
+                    </table>
+
+                </div>
                 
             </div>
         @endisset
         
     </div>
+
+    <div class="footerSpacer">
+
+    </div>
+
+    <!--     FOOTER  -->
+    <x-slot name="footer">
+
+        <x-footer :currentSong="$playbackInfo"/>
+
+
+    </x-slot>
 
 </x-app-layout>

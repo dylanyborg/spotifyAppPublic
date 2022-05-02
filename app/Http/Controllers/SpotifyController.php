@@ -241,9 +241,16 @@ class SpotifyController extends Controller
             //dd($updatedTracks);
             //dd($updatedTracks);
 
+            //fetch currently playing song
+            $playbackInfo = $this->getCurrentlyPlayingTrack();
+
+            
+
 
             //return the userLib view and give the usersCurrentLib
-            return view('spotifyRemoteControl/userLibrary', ['tracks' => $updatedTracks]);
+            return view('spotifyRemoteControl/userLibrary')
+            ->with('tracks', $updatedTracks)
+            ->with('playbackInfo', $playbackInfo);
         }
 
     }
@@ -335,7 +342,8 @@ class SpotifyController extends Controller
     }
 
     public function search(Request $request){
-        //if the request does not have a searchBar variable
+        //if the request does have a searchBar variable
+        $searchResults;
         if($request->filled('search')){
             //perform the search on the request
             $searchQuery = $request->search;
@@ -349,7 +357,6 @@ class SpotifyController extends Controller
             $spotifySession = $spotifyInfo[1];
 
 
-            $searchResults;
             try {
                 //search for the first 10 results for artist and track
                 $searchResults = $spotifyApi->search($searchQuery, 'track,artist', [
@@ -368,9 +375,11 @@ class SpotifyController extends Controller
             //save the results of the search into a session?
             session(['lastSearchResults' =>$searchResults]);
 
-            //return the search results to the search view
+                      
+            //fetch currently playing song
+            
 
-            return view('spotifyRemoteControl/search',['searchResults' => $searchResults]);
+            //return view('spotifyRemoteControl/search',['searchResults' => $searchResults]);
 
 
 
@@ -380,24 +389,60 @@ class SpotifyController extends Controller
         else{ //no search initaited, load search page with rpevioous search
             //if there is a previous search
             if($request->session()->has('lastSearchQuery')){
+                $searchResults = null;
+
                 //load the view using the previous results
-                return view('spotifyRemoteControl/search',['searchResults' => session('lastSearchResults')] );
+                //$searchResults = session('lastSearchResults');
+                //return view('spotifyRemoteControl/search',['searchResults' => session('lastSearchResults')] );
                 //dd( "loading proevious search:",session('lastSearchQuery') );
 
             }
             else{//else if there is no previous search
                 //load the page with just the search bar
-                return view('spotifyRemoteControl/search');
+                $searchResults = null;
             }
 
         }
 
-        //dd($request->searchBar);
+        $playbackInfo = $this->getCurrentlyPlayingTrack();        
+        //dd($searchResults);
+        //return the userLib view and give the usersCurrentLib
+        return view('spotifyRemoteControl/search')
+            ->with('searchResults', $searchResults)
+            ->with('playbackInfo', $playbackInfo);
 
-        return view('spotifyRemoteControl/search', ['searchResults' => $searchResults]);
+        //return view('spotifyRemoteControl/search', ['searchResults' => $searchResults]);
 
     }
 
-    //function to get spotiofy user information
+    //function to get current playback of party
+    public function getCurrentlyPlayingTrack() {
+        //check if a song is playing at all on the host topkens
+        $user = User::find(Auth::id());
+
+        $hostid = $user->party->host_id;
+
+        $spotifyInfo = $this->getApi($hostid);
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        $playbackInfo = $spotifyApi->getMyCurrentPlaybackInfo();
+        //dd($playbackInfo);
+        //dd($playbackState);
+        //if there is a song playing
+        if(isset($playbackInfo)){
+            //give the playbackInfo to the view so it can use it 
+            return $playbackInfo;
+
+        }
+        
+        else{ //no song is playing
+            //return something so the view knows a song is not playing
+            //dd('no song available');
+            return NULL;
+        }
+
+    }
     
 }

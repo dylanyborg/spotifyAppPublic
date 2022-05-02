@@ -1,15 +1,5 @@
-<x-app-layout>
-    <!--     HEADER -->
-    <x-slot name="header">
-        <h2>
-            <a href=" {{ route('userLibrary.show') }}">
-                Spotify Library
-            </a>
-            <a href=" {{ route('search.index') }}">
-                search
-            </a>
-        </h2>
-    </x-slot>
+<x-spotify-layout>
+    
 
     <!-- modal popup -->
     <div id="queueConfirmModal" class ="modal">
@@ -19,12 +9,14 @@
         </div>
     </div>
 
-    <!--  BODY   -->
-    <!-- Use a component to display each song on the view --> 
-    <div class='listOfSongs'>
-        Songs go here 
-        
-        
+    <x-song-table>
+        <x-slot name="title">
+            <!-- Display the name of the playlist of songs (liked songs, a playlist, etc)
+                Add a dropdown to change from current users to hosts library
+            for now its just usrs liobrary -->
+            {{ Auth::user()->username }}'s library
+
+        </x-slot>
 
         <table>
             @foreach ($tracks as $tracks)
@@ -51,17 +43,22 @@
             @endforeach
         </table>
 
+        
+
         <!-- AJAX script -->
         <script src="{{ asset('js/ajax-post.js') }}" defer></script>
-        
-      
 
+    </x-song-table>
 
+    <div class="footerSpacer">
 
-        
-
-        
-        
     </div>
 
-</x-app-layout>
+    <!--     FOOTER  -->
+    <x-slot name="footer">
+
+        <x-footer :currentSong="$playbackInfo"/>
+
+
+    </x-slot>
+</x-spotify-layout>
