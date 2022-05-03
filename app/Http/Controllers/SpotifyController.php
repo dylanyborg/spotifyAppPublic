@@ -428,11 +428,15 @@ class SpotifyController extends Controller
         $spotifySession = $spotifyInfo[1];
 
         $playbackInfo = $spotifyApi->getMyCurrentPlaybackInfo();
+
+        $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
         //dd($playbackInfo);
         //dd($playbackState);
         //if there is a song playing
         if(isset($playbackInfo)){
             //give the playbackInfo to the view so it can use it 
+            //check if the song is in the users library
+
             return $playbackInfo;
 
         }
@@ -443,6 +447,71 @@ class SpotifyController extends Controller
             return NULL;
         }
 
+    }
+
+    public function getArtist($artistid) {
+        //use host api to search for the artist
+        $user = User::find(Auth::id());
+
+        $hostid = $user->party->host_id;
+
+        $spotifyInfo = $this->getApi($hostid);
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        $artistFetchResult = $spotifyApi->getArtist($artistid);
+
+        //fetch artist top tracks
+        $artistTopTracks = $spotifyApi->getArtistTopTracks($artistid, [
+            'country' => 'us',
+        ]);
+
+        //fetch artist albums
+        $artistAlbums = $spotifyApi->getArtistAlbums($artistid);
+
+        //combine the three into an array
+        $artistCombinedResults = array(
+            'artistInfo' => $artistFetchResult,
+            'artistTopTracks' => $artistTopTracks,
+            'artistAlbums' => $artistAlbums
+
+        );
+
+        $playbackInfo = $this->getCurrentlyPlayingTrack();    
+        
+        $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
+
+        //return the artist view and pass the combined array
+
+        return view('spotifyRemoteControl/search/artist')
+            ->with('artist', $artistCombinedResults)
+            ->with('playbackInfo', $playbackInfo);
+
+
+    }
+
+    public function getAlbum($albumid) {
+        $user = User::find(Auth::id());
+
+        $hostid = $user->party->host_id;
+
+        $spotifyInfo = $this->getApi($hostid);
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        $albumInfo = $spotifyApi->getAlbum($albumid);
+
+        //refresh the player
+        $playbackInfo = $this->getCurrentlyPlayingTrack();    
+
+        //refresh the tokens
+        $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
+
+        return view('spotifyRemoteControl/search/album')
+            ->with('album', $albumInfo)
+            ->with('playbackInfo', $playbackInfo);
     }
     
 }

@@ -59,6 +59,12 @@ search spotify routes
 Route::get('/spotifyController/search', [SpotifyController::class, 'search'])
 ->middleware(['spotifyParty'])->name('search.index');
 
+//get artist
+Route::get('/spotifyController/artist/{artistid}', [SpotifyController::class, 'getArtist'])
+->name('artist.show');
+
+Route::get('/spotifyController/album/{albumid}', [SpotifyController::class, 'getAlbum'])
+->name('album.show');
 /*
     Party routes
 */

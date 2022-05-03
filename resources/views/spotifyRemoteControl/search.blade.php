@@ -57,7 +57,10 @@
                                 @endisset
                             </td>
                             <td>
-                                {{ $artist->name }}
+                                <a href="{{route('artist.show', $artist->id)}}">
+                                    {{ $artist->name }}
+                                </a>
+                                
                             </td>
                         </tr>
                             

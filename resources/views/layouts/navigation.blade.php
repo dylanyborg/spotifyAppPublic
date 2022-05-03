@@ -86,6 +86,13 @@
             <x-responsive-nav-link :href="route('party')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if ( isset(Auth::user()->party_id) )
+                <x-responsive-nav-link :href="route('userLibrary.show')" :active="request()->routeIs('userLibrary.show')">
+                            {{ __('Spotify Controller') }}
+                </x-responsive-nav-link>
+                    
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

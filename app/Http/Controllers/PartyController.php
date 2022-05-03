@@ -89,6 +89,7 @@ class PartyController extends Controller
     //fucntion to lock the party from api requests
     public function lock(Request $request) {
         //set the attribute in the party table (isLocked) to the negation (!)
+        //dd($request->lockButton);
         $party = Party::find($request->lockButton);
 
         
