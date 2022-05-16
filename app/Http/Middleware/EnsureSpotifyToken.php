@@ -42,7 +42,7 @@ class EnsureSpotifyToken
         */
         //if the user is not in a party
         if(!isset($user->party_id)){
-            //redirect to the join party page
+            //redirect to the join/create party page
             return redirect()->route('party.index');
         }
         

@@ -1,7 +1,35 @@
 <div>
     <div class="playlistTitle">
-        {{ $title }}
+        <!-- Dropdown button to select two different libraries -->
+        <x-dropdown align="top" width="full" >
+            <x-slot name="trigger">
+                <div>
+                    <button >
+                        <p style="font-size: 20px"> {{ $title }} </p>
+                    </button>
+                </div>
+                
+            </x-slot>
+
+            <x-slot name="content">
+                <div class=" bg-slate-800 text-center mx-1" style="color: white">
+                    
+                    <div>
+                        <a href="{{ route('swapLib') }}">
+                            <p>
+                                {{ $lib2}}
+                            </p>
+                        </a>
+                    </div>
+                   
+                </div>
+
+
+            </x-slot>
+
+        </x-dropdown>
     </div>
+
     <div class="listOfSongs">
         {{ $slot }}
     </div>

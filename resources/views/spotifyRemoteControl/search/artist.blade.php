@@ -32,7 +32,36 @@
                                 
                             </td>
                             <td>
-                                dropdown button 
+                                <x-dropdown align="right" width="32">
+                                    <x-slot name="trigger">
+                                        <button class=" w-10">
+                                            <p style="font-size: 20px"> ... </p>
+                                        </button>
+                                    </x-slot>
+        
+                                    <x-slot name="content">
+                                        <div class=" text-center mx-1" style="background-color:#191414 ">
+                                            <!-- Add to queue -->
+                                            <button type="button" name="queueButton" data-id="{{$track->id}}">
+                                                <p>
+                                                    queue song
+                                                </p>
+                                            </button>
+        
+                                            <div>
+                                                <a href="{{ route('album.show', $track->album->id) }} ">
+                                                    <p>
+                                                        go to album
+                                                    </p>
+                                                </a>
+                                            </div>
+        
+                                        </div>
+        
+        
+                                    </x-slot>
+        
+                                </x-dropdown>
                             </td>
                         </tr>
                     @endforeach
@@ -44,7 +73,7 @@
         </div>
 
         <div class="mt-4">
-            <h1 class="text-3xl"> flex Albums</h1>
+            <h1 class="text-3xl"> Albums</h1>
             <div class="flex flex-col">
                 @foreach ($artist['artistAlbums']->items as $album)
                     <div class="mt-2 flex ">

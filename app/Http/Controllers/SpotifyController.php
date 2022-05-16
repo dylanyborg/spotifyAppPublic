@@ -58,6 +58,7 @@ class SpotifyController extends Controller
                     'playlist-read-private',
                     'user-read-playback-state',
                     'user-library-read',
+                    'user-library-modify',
                     'user-modify-playback-state',
                     'user-read-playback-state',
                     'user-read-currently-playing',
@@ -155,7 +156,7 @@ class SpotifyController extends Controller
     public function loadUserLibrary(Request $request){
 
         //before loading the host library, make sure the party setting allow it
-
+        $timeStart = microtime(true);
 
         $userID;
         if(Auth::check()){ //if user is logged in
@@ -245,7 +246,11 @@ class SpotifyController extends Controller
             $playbackInfo = $this->getCurrentlyPlayingTrack();
 
             
+            $timeEnd = microtime(true);
 
+            $executionTime = $timeEnd - $timeStart;
+
+            //dd($executionTime*1000);
 
             //return the userLib view and give the usersCurrentLib
             return view('spotifyRemoteControl/userLibrary')
@@ -375,6 +380,7 @@ class SpotifyController extends Controller
             //save the results of the search into a session?
             session(['lastSearchResults' =>$searchResults]);
 
+
                       
             //fetch currently playing song
             
@@ -389,7 +395,7 @@ class SpotifyController extends Controller
         else{ //no search initaited, load search page with rpevioous search
             //if there is a previous search
             if($request->session()->has('lastSearchQuery')){
-                $searchResults = null;
+                $searchResults = session('lastSearchResults');
 
                 //load the view using the previous results
                 //$searchResults = session('lastSearchResults');
@@ -429,13 +435,26 @@ class SpotifyController extends Controller
 
         $playbackInfo = $spotifyApi->getMyCurrentPlaybackInfo();
 
-        $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
+        
+
         //dd($playbackInfo);
         //dd($playbackState);
+
         //if there is a song playing
         if(isset($playbackInfo)){
             //give the playbackInfo to the view so it can use it 
             //check if the song is in the users library
+            $songSaved; //bool
+            //check if the user is connected to spotify
+            if( isset($user->spotifyUserAccessToken) ){
+                //check if the song is saved in their library
+                $songSaved = $this->checkIfTrackSaved($playbackInfo->item->id);
+                session(['songSaved' => $songSaved[0]]);
+            }
+
+            $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
+
+
 
             return $playbackInfo;
 
@@ -444,8 +463,83 @@ class SpotifyController extends Controller
         else{ //no song is playing
             //return something so the view knows a song is not playing
             //dd('no song available');
+            $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
+
             return NULL;
         }
+
+    }
+
+    //function to be used for ajax calls.
+    //returns a json response to the ajax call
+
+    public function refreshPlaybackInfo(){
+        $user = User::find(Auth::id());
+
+        $hostid = $user->party->host_id;
+
+        $spotifyInfo = $this->getApi($hostid);
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        $playbackInfo = $spotifyApi->getMyCurrentPlaybackInfo();
+
+        
+
+        //dd($playbackInfo);
+        //dd($playbackState);
+
+        //if there is a song playing
+        if(isset($playbackInfo)){
+            //give the playbackInfo to the view so it can use it 
+            //check if the song is in the users library
+            $songSaved; //bool
+            //check if the user is connected to spotify
+            if( isset($user->spotifyUserAccessToken) ){
+                //check if the song is saved in their library
+                $songSaved = $this->checkIfTrackSaved($playbackInfo->item->id);
+                session(['songSaved' => $songSaved[0]]);
+
+            }
+
+            $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
+
+
+
+            return \Response::json(array(
+                'playbackInfo' => $playbackInfo,
+                'songSaved' => $songSaved,
+            ));
+            //return $playbackInfo;
+
+        }
+        
+        else{ //no song is playing
+            //return something so the view knows a song is not playing
+            //dd('no song available');
+            $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
+
+            return \Response::json( "fail");
+        }
+    }
+
+    public function checkIfTrackSaved($trackid){
+
+        $spotifyInfo = $this->getApi(Auth::id());
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        $trackInLib = $spotifyApi->myTracksContains($trackid);
+
+        $this->refreshTokens($spotifyApi, $spotifySession, Auth::id());
+
+        return $trackInLib;
+
+
+
+
 
     }
 
@@ -513,5 +607,162 @@ class SpotifyController extends Controller
             ->with('album', $albumInfo)
             ->with('playbackInfo', $playbackInfo);
     }
+
+    public function getPlaylists() {
+        //get the user or hosts playlists
+        $user = User::find(Auth::id());
+
+        $hostid = $user->party->host_id;
+
+        $spotifyInfo = $this->getApi(Auth::id());
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        $userid = Auth::id();
+
+        //the api set is going to be the user we need, so just use that
+        $listOfPlaylists = $spotifyApi->getMyPlaylists();
+
+        //return the list of playlists to the playlists view
+        //the view will display a liost of the playlists, 
+            //and ciewing a single playlist will load more infop about it
+
+        $playbackInfo = $this->getCurrentlyPlayingTrack();    
+
+        
+        $this->refreshTokens($spotifyApi, $spotifySession, Auth::id());
+
+        //dd($listOfPlaylists);
+
+        return view('spotifyRemoteControl/playlists')
+            ->with('listOfPlaylists', $listOfPlaylists)
+            ->with('playbackInfo', $playbackInfo);
+       
+    }
+
+    public function fetchPlaylist($playlistid){
+
+        $user = User::find(Auth::id());
+
+        $hostid = $user->party->host_id;
+
+        $spotifyInfo = $this->getApi($hostid);
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        //fetch the singular playlist
+        $playlistInfo = $spotifyApi->getPlaylist($playlistid);
+
+        $playbackInfo = $this->getCurrentlyPlayingTrack();    
+
+        $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
+
+        return view('spotifyRemoteControl/playlist')
+            ->with('playlist', $playlistInfo)
+            ->with('playbackInfo', $playbackInfo);
+    }
     
+    public function deleteFromTracks(Request $request){
+        //get song id form request
+        $songid = $request->input('songid');
+
+        //get the users spotify api
+        $spotifyInfo = $this->getApi(Auth::id());
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        //call the spotify api to remove the song from the library
+        $wasRemoved = $spotifyApi->deleteMyTracks($songid);
+
+        //refresh the tokens
+        $this->refreshTokens($spotifyApi, $spotifySession, Auth::id());
+
+        //return json repsonse
+        if($wasRemoved){
+            return \Response::json("success");
+
+        }
+        else{
+            return \Response::json("fail");
+
+        }
+
+    }
+
+    public function addToTracks(Request $request){
+        //dd("adding to tracks function in cointroller");
+        $songid = $request->input('songid');
+
+        
+
+        $spotifyInfo = $this->getApi(Auth::id());
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        $wasAdded = $spotifyApi->addMyTracks($songid);
+
+        //refresh the tokens
+        $this->refreshTokens($spotifyApi, $spotifySession, Auth::id());
+
+        //return json repsonse
+        if($wasAdded){
+
+
+        }
+
+        return \Response::json("success");
+
+        
+
+
+    }
+
+    //function to unlink a spotify account from the currentr user
+    public function removeSpotifyAccount(){
+
+        //check if user is hsoting a party
+        $hostedParty = Auth::user()->host;
+        if(isset($hostedParty)){
+            //remove party
+            $hostedParty->delete();
+        }
+        //remove session variables
+            //if user has loaded THEIR lib
+            //any other flags
+
+        //set the user model attributes to nbull
+        $user = Auth::user();
+
+        $user->spotifyUserAccessToken = null;
+        $user->spotifyUserRefreshToken = null;
+
+        $user->save();
+
+        //return the user to the dashboard view
+        return view('/dashboard/party');
+
+    }
+
+    public function swapLib(){
+        //swap the current lib for the other available lib
+        //only alloy a swap if both user connected and host lib available
+        
+        //if the current lib is the user
+        if(session('spotifyApiUserId') == Auth::id()){
+            //swap to the host
+            $hostid = Auth::user()->party->host_id;
+            session(['spotifyApiUserId' => $hostid]);
+        }
+        else{ //swap to current user
+            session(['spotifyApiUserId' => Auth::id()]);
+        }
+
+        //rerouta back to the previous view
+        return redirect()->back();
+
+    }
 }

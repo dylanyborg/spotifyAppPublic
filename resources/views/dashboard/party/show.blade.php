@@ -164,6 +164,14 @@
                    
                     @endif
 
+                    <!-- If user has spotoify tokens saved -->
+                    @if (isset(Auth::user()->spotifyUserAccessToken))
+                        <form action="{{ route('spotifyAccount.delete') }}" method="post">
+                            @csrf
+                            <button type="submit">Remove Spotify Account</button>
+                        </form>
+                    @endif
+
                     
                 </div>
             </div>
