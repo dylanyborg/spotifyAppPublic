@@ -1,5 +1,6 @@
-const queueButton = document.getElementsByClassName('queueButton');
+const queueButton = document.getElementsByName('queueButton');
 //const queueButton = document.querySelectorAll('[id=queueButton]');
+
 
 
 if(queueButton){
@@ -27,6 +28,9 @@ function addToQueue(){
             console.log("It worked" + songid);
 
             var modal = document.getElementById("queueConfirmModal");
+
+            $("h5").html("Song added to queue");
+
             modal.style.display = "block";
             //popup.classList.toggle("show");
 
@@ -38,6 +42,16 @@ function addToQueue(){
         },
         error: function() {
             console.log("fail");
+            $("h5").html("Failed to queue song");
+
+            var modal = document.getElementById("queueConfirmModal");
+            modal.style.display = "block";
+            //popup.classList.toggle("show");
+
+            setTimeout(function(){
+                modal.style.display = "none";
+            }, 3000);
+
         }
 
     });

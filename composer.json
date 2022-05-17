@@ -10,6 +10,7 @@
         "jwilsson/spotify-web-api-php": "^5.0",
         "laravel/framework": "^9.2",
         "laravel/sanctum": "^2.14.1",
+        "laravel/telescope": "^4.9",
         "laravel/tinker": "^2.7"
     },
     "require-dev": {

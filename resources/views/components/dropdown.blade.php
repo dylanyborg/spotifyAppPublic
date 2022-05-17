@@ -18,6 +18,14 @@ switch ($width) {
     case '48':
         $width = 'w-48';
         break;
+
+    case '32':
+        $width = 'w-32';
+        break; 
+        
+    case 'full':
+        $width = 'w-full';
+        break;
 }
 @endphp
 
@@ -36,7 +44,7 @@ switch ($width) {
             class="absolute z-50 mt-2 {{ $width }} rounded-md shadow-lg {{ $alignmentClasses }}"
             style="display: none;"
             @click="open = false">
-        <div class="rounded-md ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
+        <div class="rounded-md ring-1 ring-black ring-opacity-5 ring-inset {{ $contentClasses }}">
             {{ $content }}
         </div>
     </div>
