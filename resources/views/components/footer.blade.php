@@ -29,6 +29,11 @@
                     
                     
                 </div>
+
+            @else 
+                <div style="width: 13%">
+
+                </div>
                 
             @endif
             

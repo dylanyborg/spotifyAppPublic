@@ -15,6 +15,7 @@
                 Add a dropdown to change from current users to hosts library
             for now its just usrs liobrary -->
             @if(session()->has('spotifyApiUserId'))
+
                 @if (session('spotifyApiUserId') === Auth::id())
                 <!-- Users library is beinbg shown -->
                     {{ Auth::user()->username }}'s library
@@ -24,9 +25,13 @@
                 @else
                 <!-- Host library is being shown. Get name of party host -->
                     Host: {{ Auth::user()->party->host->username}}'s library
-                    <x-slot name="lib2">
-                        {{ Auth::user()->username }}'s library
-                    </x-slot>
+                    
+                    @isset(Auth::user()->spotifyUserAccessToken)
+                        <x-slot name="lib2">
+                            {{ Auth::user()->username }}'s library
+                        </x-slot>
+                    @endisset
+                    
                 @endif
             @endif
             
@@ -68,7 +73,7 @@
                                     </button>
 
                                     <div>
-                                        <a href="#">
+                                        <a href="{{ route('album.show', $tracks->track->album->id) }} ">
                                             <p>
                                                 go to album
                                             </p>
@@ -98,7 +103,6 @@
         
 
         <!-- AJAX script -->
-        <script src="{{ asset('js/ajax-post.js') }}" defer></script>
 
     </x-song-table>
 

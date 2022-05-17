@@ -13,14 +13,20 @@
 
             <x-slot name="content">
                 <div class=" bg-slate-800 text-center mx-1" style="color: white">
+                    @isset($lib2)
+                        <div>
+                            <a href="{{ route('swapLib') }}">
+                                <p>
+                                    {{ $lib2}}
+                                </p>
+                            </a>
+                        </div>
+                    @else 
+                        <p>
+                            No library to swap to
+                        </p>
+                    @endisset
                     
-                    <div>
-                        <a href="{{ route('swapLib') }}">
-                            <p>
-                                {{ $lib2}}
-                            </p>
-                        </a>
-                    </div>
                    
                 </div>
 
