@@ -52,6 +52,8 @@ Route::controller(SpotifyController::class)->group(function() {
 
     Route::post('/spotifyController/userLibrary/queue', 'queueSong')
         ->name('queueTrack');
+    Route::post('/spotifyController/userLibrary/fetchMoreSongs', 'fetchMoreSongs')
+        ->name('fetchMoreSongs');
 
     Route::get('/spotifyController/search', 'search')
         ->middleware(['spotifyParty'])->name('search.index');
@@ -65,6 +67,7 @@ Route::controller(SpotifyController::class)->group(function() {
         ->name('playlists.index');
     Route::get('/spotifyController/playlist/{playlistid}',  'fetchPlaylist')
         ->name('playlist.show');
+    Route::post('/spotifyController/fetchMoreSongsForPlaylist',  'fetchMoreTracksForPlaylist');
 
     Route::post('/spotifyController/deleteFromLib', 'deleteFromTracks');
     Route::post('/spotifyController/userLibrary/addToLib', 'addToTracks')

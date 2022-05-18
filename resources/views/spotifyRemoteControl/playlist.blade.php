@@ -1,33 +1,64 @@
 <x-spotify-layout>
+    <input type="hidden" name="playlistid" id="playlistid" value=" {{$playlist->id}}" >
     <div class=" bg-black text-white">
         <div>
             <!-- Playlist image -->
             <div>
                 <img class=" mx-auto max-h-[300px] pt-2" src=" {{$playlist->images[0]->url }}" alt="">
                 <p class="text-5xl"> {{ $playlist->name }}</p>
+                <p> Created by: {{ $playlist->owner->display_name}}</p>
             </div>
+            <div class="listOfSongs">
 
-            <table style="">
-                @foreach ($playlist->tracks->items as $track)
-                    <tr style="">
-                        <td class=" w-1/5 p-2 pl-4">
-                            <img src="{{$track->track->album->images[2]->url}}" alt="">
-                        </td>
+                
+                <table style="">
+                    <tbody id="tableSongs">
+                        @foreach ($playlist->tracks->items as $tracks)
+                            <x-song-table-row>
+                                <x-slot name="albumArt">
+                                    {{ $tracks->track->album->images[2]->url }}
+                                </x-slot>
+            
+                                <x-slot name="trackid">
+                                    {{$tracks->track->id}}
+                                </x-slot>
+                                <x-slot name="trackName">
+                                    {{ $tracks->track->name }}
+                                </x-slot>
+            
+                                <x-slot name="artistName">
+                                    {{ $tracks->track->artists[0]->name }}
+                                </x-slot>
+                                <x-slot name="artistid">
+                                    {{ $tracks->track->artists[0]->id }}
+                                </x-slot>
+            
+                                <x-slot name="albumid">
+                                    {{ $tracks->track->album->id}}
+                                </x-slot>
+            
+                                <x-slot name="queueButton">
+                                    Add to queue
+                                </x-slot>
+            
+                                <x-slot name="albumLink">
+                                    View album
+                                </x-slot>
+            
+                                <x-slot name="artistLink">
+                                    View Artist
+                                </x-slot>
+            
+                            
+                                
+                            </x-song-table-row>
 
-                        <td>
-                            <p> {{$track->track->name }}</p>
-                            <p> {{$track->track->artists[0]->name }}</p>
-
-                        </td>
-                         <!-- <td style="width: 25%; padding: 8px; padding-left: 16px"> -->
-                        
-                        
-                    </tr>
-                @endforeach
-                <tr>
-
-                </tr>
-            </table>
+                            
+                        @endforeach
+                    </tbody>
+                    
+                </table>
+            </div>
 
         </div>
             
@@ -37,6 +68,17 @@
         </div>
 
     </div>
+
+    <script type="text/javascript">
+        $(window).scroll(function() {
+            if( $(window).height() + $(window).scrollTop() == $(document).height() ){
+                console.log("scrolled to bottom");
+                fetchMoreTracksForPlaylist();
+            }
+        });
+
+
+    </script>
 
     <!--     FOOTER  -->
     <x-slot name="footer">

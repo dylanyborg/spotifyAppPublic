@@ -174,13 +174,6 @@ class SpotifyController extends Controller
                 return redirect()->route('search.index');
             }
             
-            //if all songs loaded, do nothing
-            if(  $request->session()->has('userLibrary')){
-                if(session('allUserLibLoaded') == 1){
-                    //return to the lib page
-                    return view('spotifyRemoteControl/userLibrary', ['tracks' => session('userLibrary')]);
-                }
-            }
             //@param apiUser is user id for tokens to use
             //return the api to be used for spotifyWebApi calls
             $spotifyInfo = $this->getApi($apiUser);
@@ -192,13 +185,6 @@ class SpotifyController extends Controller
             //check if any songs are loaded
             
             $existingNumberOfSongs = 0;
-            $existingTracklist;
-            //if the session variable for user lib has songs in it
-            if($request->session()->has('userLibrary')){
-                //number of existing songs will change
-                $existingTracklist = $request->session()->get('userLibrary');
-                $existingNumberOfSongs = count($existingTracklist);                   
-            }
             //else song count stays zero
                         
             //load user tracks, using the number oif songs loaded as the offset
@@ -209,27 +195,108 @@ class SpotifyController extends Controller
                 'offset' => $existingNumberOfSongs,
             ]);
 
-            
-
-            //refresh tokens in db/session ********
-            $this->refreshTokens($spotifyApi, $spotifySession, $apiUser);
-
+            // save the number of laoderd songs to a session           
             $numberOfSongsLoaded = count($newTracks->items);
-            $updatedTracks;
-            //if there was existing songs, merge the new and existing array
-            if($request->session()->has('userLibrary')){
-                $updatedTracks = array_merge(session('userLibrary'), $newTracks->items);
-                session(['userLibrary' => $updatedTracks]);
-            }
-            else{
-                //save new tracks to a session var
-                $updatedTracks = $newTracks->items;
-                session(['userLibrary' => $newTracks->items]);
-            }
+            session(['numOfSongsLoaded' => $numberOfSongsLoaded]);
+            
+            
 
             //check if more songs to load
             //if 50 songs were loaded
-            if(count($updatedTracks) < 50){
+            if($numberOfSongsLoaded < 50){
+                //no more songs to be loaded
+                session(['allUserLibLoaded' => 1]);
+            }
+            else{
+                //more songs to load
+                session(['allUserLibLoaded' => 0]);
+
+            }
+
+            //dd($newTracks);
+
+            //fetch currently playing song
+            $playbackInfo = $this->getCurrentlyPlayingTrack();
+
+            //refresh tokens in db/session ********
+            $this->refreshTokens($spotifyApi, $spotifySession, $apiUser);
+            
+            $timeEnd = microtime(true);
+
+            $executionTime = $timeEnd - $timeStart;
+
+            //dd($executionTime*1000);
+
+            //return the userLib view and give the usersCurrentLib
+            return view('spotifyRemoteControl/userLibrary')
+            ->with('tracks', $newTracks)
+            ->with('playbackInfo', $playbackInfo);
+        }
+
+    }
+
+    //thgis function fetches mroe soings from the users library
+    //this is called from ajax when the user scrolls to the bottom of the page
+    //thyis will only be called when songs are alrewayd loaded
+    //return a json response containing the new songs. Ajax will append them to the table
+    public function fetchMoreSongs(Request $request){
+        //before loading the host library, make sure the party setting allow it
+        $timeStart = microtime(true);
+
+        $userID;
+        if(Auth::check()){ //if user is logged in
+
+            $apiUser;
+            //get the user id of the correct api to use form a session
+            //'spotifyApiUserId = the user_id of the current api to use (host or current user)
+            if($request->session()->has('spotifyApiUserId')){
+                $apiUser = session('spotifyApiUserId'); //will be user or host id
+            }
+            //this session var is set when logging in, connecting spotyiy, or joingn party
+            //if no session var is set, user cannot view any libraries or playlists
+            else{
+                //go to the search page
+                return redirect()->route('search.index');
+            }
+            
+            //if all songs loaded, do nothing
+            if(  $request->session()->has('allUserLibLoaded')){
+                if(session('allUserLibLoaded') == 1){
+                    //return to the lib page
+                    return \Response::json("No New Songs");
+                    //return view('spotifyRemoteControl/userLibrary', ['tracks' => session('userLibrary')]);
+                }
+            }
+            //@param apiUser is user id for tokens to use
+            //return the api to be used for spotifyWebApi calls
+            $spotifyInfo = $this->getApi($apiUser);
+
+            $spotifyApi = $spotifyInfo[0];
+            $spotifySession = $spotifyInfo[1];
+
+            //check how many songs are loaded for the offset
+            $existingNumberOfSongs = session('numOfSongsLoaded');
+
+            //load user tracks, using the number oif songs loaded as the offset
+            //refresh the tokens
+
+            $newTracks = $spotifyApi->getMySavedTracks([
+                'limit' => 50,
+                'offset' => $existingNumberOfSongs,
+            ]);
+
+            //check if all songs loaded
+
+            $numberOfSongsLoaded = count($newTracks->items);
+
+            //get the total amount of songs that have been loaded, used for offset
+            //in next function call
+
+            $totalNumberOfSongsLoaded = $numberOfSongsLoaded + $existingNumberOfSongs;
+
+            session(['numOfSongsLoaded' => $totalNumberOfSongsLoaded]);
+
+            if($numberOfSongsLoaded < 50){
                 //no more songs to be loaded
                 session(['allUserLibLoaded' => 1]);
             }
@@ -240,11 +307,13 @@ class SpotifyController extends Controller
             }
 
             //dd($updatedTracks);
-            //dd($updatedTracks);
 
             //fetch currently playing song
             $playbackInfo = $this->getCurrentlyPlayingTrack();
 
+            //refresh tokens in db/session ********
+            //this gets done when refreshing the current track
+            //$this->refreshTokens($spotifyApi, $spotifySession, $apiUser);
             
             $timeEnd = microtime(true);
 
@@ -253,11 +322,60 @@ class SpotifyController extends Controller
             //dd($executionTime*1000);
 
             //return the userLib view and give the usersCurrentLib
-            return view('spotifyRemoteControl/userLibrary')
-            ->with('tracks', $updatedTracks)
-            ->with('playbackInfo', $playbackInfo);
+            return \Response::json($newTracks);
+
+            //return view('spotifyRemoteControl/userLibrary')
+            //->with('tracks', $newTracks)
+            //->with('playbackInfo', $playbackInfo);
+        }
+    }
+
+    public function fetchMoreTracksForPlaylist(Request $request){
+        //check what api to use
+        $apiUser;
+        //get the user id of the correct api to use form a session
+        //'spotifyApiUserId = the user_id of the current api to use (host or current user)
+        if($request->session()->has('spotifyApiUserId')){
+            $apiUser = session('spotifyApiUserId'); //will be user or host id
+        }
+        //this session var is set when logging in, connecting spotyiy, or joingn party
+        //if no session var is set, user cannot view any libraries or playlists
+        else{
+            //go to the search page
+            return redirect()->route('search.index');
         }
 
+        //if all songs on playlist are loaded, return
+        if($request->session()->has('allPlaylistTracksLoaded')){
+            if(session('allPlaylistTracksLoaded') === true){
+                return \Response::json("all tracks loaded");
+            }
+        }
+
+        //get the correct api   
+
+        $spotifyInfo = $this->getApi($apiUser);
+
+        $spotifyApi = $spotifyInfo[0];
+        $spotifySession = $spotifyInfo[1];
+
+        //fetch more songs based off session: numberOfSongsInPlaylist
+        $numberOfExistingTracks = session("numberOfTracksInPlaylist");
+
+        $newPlaylistTracks = $spotifyApi->getPlaylistTracks($request->playlistid, [ 
+            'limit' => 50,
+            'offset' => $numberOfExistingTracks,
+        ]);
+
+        if(count($newPlaylistTracks->items) < 50){
+            session(['allPlaylistTracksLoaded' => true]);
+        }
+
+        //$playbackInfo = $this->getCurrentlyPlayingTrack();    
+
+        $this->refreshTokens($spotifyApi, $spotifySession, $apiUser);
+
+        return \Response::json($newPlaylistTracks);
     }
 
     //function to freshen up thyer access and reftresh tokens
@@ -353,10 +471,12 @@ class SpotifyController extends Controller
             //perform the search on the request
             $searchQuery = $request->search;
 
-            //fetch the api for the correct user to execute the search on (host or user)
-            $userID = Auth::id(); //this should change to add a way to use the host tokens
+            //fetch the api for the host
+            $user = User::find(Auth::id());
 
-            $spotifyInfo = $this->getApi($userID);
+            $hostid = $user->party->host_id;
+
+            $spotifyInfo = $this->getApi($hostid);
  
             $spotifyApi = $spotifyInfo[0];
             $spotifySession = $spotifyInfo[1];
@@ -373,7 +493,7 @@ class SpotifyController extends Controller
 
             //refresh the tokens after using them
             
-            $this->refreshTokens($spotifyApi, $spotifySession, $userID);
+            $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
 
             //save the search query to a session variable
             session(['lastSearchQuery' => $searchQuery]);
@@ -448,8 +568,10 @@ class SpotifyController extends Controller
             //check if the user is connected to spotify
             if( isset($user->spotifyUserAccessToken) ){
                 //check if the song is saved in their library
-                $songSaved = $this->checkIfTrackSaved($playbackInfo->item->id);
-                session(['songSaved' => $songSaved[0]]);
+                if(!$playbackInfo->item->is_local){
+                    $songSaved = $this->checkIfTrackSaved($playbackInfo->item->id);
+                    session(['songSaved' => $songSaved[0]]); //bool
+                }
             }
 
             $this->refreshTokens($spotifyApi, $spotifySession, $hostid);
@@ -485,7 +607,6 @@ class SpotifyController extends Controller
 
         $playbackInfo = $spotifyApi->getMyCurrentPlaybackInfo();
 
-        
 
         //dd($playbackInfo);
         //dd($playbackState);
@@ -494,12 +615,20 @@ class SpotifyController extends Controller
         if(isset($playbackInfo)){
             //give the playbackInfo to the view so it can use it 
             //check if the song is in the users library
-            $songSaved; //bool
+            $songSaved = false; //bool
             //check if the user is connected to spotify
             if( isset($user->spotifyUserAccessToken) ){
                 //check if the song is saved in their library
-                $songSaved = $this->checkIfTrackSaved($playbackInfo->item->id);
-                session(['songSaved' => $songSaved[0]]);
+                //only if the current song is not local
+                if(!$playbackInfo->item->is_local){
+                    $songSaved = $this->checkIfTrackSaved($playbackInfo->item->id);
+                    session(['songSaved' => $songSaved[0]]); //bool
+                }
+                else{//song is local, display custome message
+                    
+                }
+                
+                
 
             }
 
@@ -608,13 +737,23 @@ class SpotifyController extends Controller
             ->with('playbackInfo', $playbackInfo);
     }
 
-    public function getPlaylists() {
+    public function getPlaylists(Request $request) {
         //get the user or hosts playlists
-        $user = User::find(Auth::id());
+        //check what api to use
+        $apiUser;
+        //get the user id of the correct api to use form a session
+        //'spotifyApiUserId = the user_id of the current api to use (host or current user)
+        if($request->session()->has('spotifyApiUserId')){
+            $apiUser = session('spotifyApiUserId'); //will be user or host id
+        }
+        //this session var is set when logging in, connecting spotyiy, or joingn party
+        //if no session var is set, user cannot view any libraries or playlists
+        else{
+            //go to the search page
+            return redirect()->route('search.index');
+        }
 
-        $hostid = $user->party->host_id;
-
-        $spotifyInfo = $this->getApi(Auth::id());
+        $spotifyInfo = $this->getApi($apiUser);
 
         $spotifyApi = $spotifyInfo[0];
         $spotifySession = $spotifyInfo[1];
@@ -631,7 +770,7 @@ class SpotifyController extends Controller
         $playbackInfo = $this->getCurrentlyPlayingTrack();    
 
         
-        $this->refreshTokens($spotifyApi, $spotifySession, Auth::id());
+        $this->refreshTokens($spotifyApi, $spotifySession, $apiUser);
 
         //dd($listOfPlaylists);
 
@@ -654,6 +793,16 @@ class SpotifyController extends Controller
 
         //fetch the singular playlist
         $playlistInfo = $spotifyApi->getPlaylist($playlistid);
+
+        session(["numberOfTracksInPlaylist" => count($playlistInfo->tracks->items)]);
+
+        if(count($playlistInfo->tracks->items) < 50){
+            session(['allPlaylistTracksLoaded' => true]);
+        }
+        else{
+            session(['allPlaylistTracksLoaded' => false]);
+
+        }
 
         $playbackInfo = $this->getCurrentlyPlayingTrack();    
 
@@ -695,6 +844,11 @@ class SpotifyController extends Controller
     public function addToTracks(Request $request){
         //dd("adding to tracks function in cointroller");
         $songid = $request->input('songid');
+
+        if($songid == null){
+            return \Response::json("song id is null");
+
+        }
 
         
 
@@ -743,7 +897,7 @@ class SpotifyController extends Controller
         $user->save();
 
         //return the user to the dashboard view
-        return view('/dashboard/party');
+        return redirect()->route('party.index');
 
     }
 

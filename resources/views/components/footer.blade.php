@@ -16,16 +16,18 @@
                 <div id="songSaved" style="width: 13%; margin-top:auto; margin-bottom:auto">
 
                     
+                    @if (session("songSaved") == true)
+                        <button type="submit" value="delete" id="likedSongButton" data-id="{{ $currentSong->item->id}}">
+                            <img id="likedSongImage" src="{{ asset('images/spotifyHeartLiked.svg')}}" alt="&#x2764">
+                        </button>
+                    @else 
+                        <button type="submit" value="add" id="likedSongButton" data-id="{{ $currentSong->item->id}}">
+                            <img id="likedSongImage"  src="{{ asset('images/spotifyHeartUnliked.svg')}}" alt="&#x2764">
+                        </button>
+                    @endif
+                    
+
                         
-                        @if (session("songSaved") == true)
-                            <button type="submit" value="delete" id="likedSongButton" data-id="{{ $currentSong->item->id}}">
-                                <img id="likedSongImage" src="{{ asset('images/spotifyHeartLiked.svg')}}" alt="&#x2764">
-                            </button>
-                        @else 
-                            <button type="submit" value="add" id="likedSongButton" data-id="{{ $currentSong->item->id}}">
-                                <img id="likedSongImage"  src="{{ asset('images/spotifyHeartUnliked.svg')}}" alt="&#x2764">
-                            </button>
-                        @endif
                     
                     
                 </div>
@@ -51,7 +53,7 @@
 
 
 <div class="spotifyNavBar">
-    <nav>
+    <nav style="height: 100%; padding-top:3px">
         <div class="spotifyControllerHeader">
             <x-nav-link class=" text-white" :href="route('userLibrary.show')" :active="request()->routeIs('userLibrary.show')"  >
                 {{ __('Liked Songs')}}

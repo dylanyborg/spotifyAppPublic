@@ -1270,10 +1270,11 @@ select {
     /*margin-bottom: 10%;*/
 }
 .listOfSongs td, th {
-padding: 8px;
+/* padding: 3px 8px 3px 5px;*/
 }
 .listOfSongs tr {
 background-color: #191414;
+height: 75px;
 }
 
 .listOfSongs p {
@@ -1291,7 +1292,7 @@ color: white;
 
 }
 .wideCell {
-    width: 85%;
+    width: 80%;
 }
 .modal {
     display: none;
@@ -1300,7 +1301,7 @@ color: white;
     margin-bottom: 5px;
     left: 0;
     right: 0;
-    bottom: 13%;
+    bottom: 17%;
     z-index: 1;
     width: 95%;
     height: 7%;
@@ -1328,7 +1329,7 @@ color: white;
     bottom: 0;
     display: flex;
     width: 100%;
-    height: 16%;
+    height: 20%;
     flex-direction: column;
         
     
@@ -1378,14 +1379,14 @@ color: white;
     }
 .spotifyNavBar{
         background-color: #191414;
-        height: 35%;
+        height: 50%;
         bottom: 0;
         align-self: flex-end;
         width: 100%;
         margin-top: auto;
     }
 .footerSpacer {
-        height: 13vh;
+        height: 20vh;
     }
 .playlistTitle {
         position: -webkit-sticky;
