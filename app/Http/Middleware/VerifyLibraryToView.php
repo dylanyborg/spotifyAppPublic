@@ -23,15 +23,31 @@ class VerifyLibraryToView
 
         $user = User::find(Auth::id());
 
-        //if the user has not connected to spotify
-        if (!isset($user->spotifyUserAccessToken)) {
-            //if no access to host library
-            if($user->party->hideHostLibrary){
-                //user can only search for songs
+        //if the hostparty is unavalable
+            //if the user hadoes not have a lib to view
+                //redirect
+            //else show the user liub
+        //else show the host lib
+
+        if($user->party->hideHostLibrary){
+            if (!isset($user->spotifyUserAccessToken)) {
+                //no party or view
                 return redirect()->route('search.index');
             }
+            session(['spotifyApiUserId' => Auth::id()]);
+        }
+        //else the host lib can be viewed.
+        //check if the user has atleast a spotify account to use
+
+        //if the user has not connected to spotify
+        if (!isset($user->spotifyUserAccessToken)) {
+            //user can only search for songs
+            return redirect()->route('search.index');
+            
             
         }
+        //else make the api the user
+
 
         return $next($request);
     }

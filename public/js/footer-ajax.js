@@ -1,6 +1,11 @@
 const likedSongButton = document.getElementById('likedSongButton');
 
-const buttonAction = document.getElementById('likedSongButton').value;
+//const buttonActionElement = document.getElementById('likedSongButton');
+var buttonAction; 
+if(likedSongButton){
+    buttonAction = document.getElementById('likedSongButton').value;
+
+}
 
 const likedSongButtonImage = document.getElementById('likedSongImage');
 
@@ -58,6 +63,7 @@ function loadProgressBar(progress_ms, duration_ms){
 function fetchPlayingTrack(){
     //run an ajax call to the spotify controller to fetch the playing song
     //if successful, update the hidden input values
+    console.log("reloading playing track");
 
     var url = "/spotifyController/refreshPlaybackInfo";
 
@@ -80,27 +86,32 @@ function fetchPlayingTrack(){
             songArtistElem.innerHTML = data.playbackInfo.item.artists[0].name + "&#8226" + data.playbackInfo.item.album.name;
 
             //update if the user likes the song
-
-            if(data.songSaved[0]){
-                console.log("song Saved");
-                likedSongButtonImage.src =  '/images/spotifyHeartLiked.svg';
-                likedSongButton.removeEventListener('click', addToLibrary);
-                likedSongButton.addEventListener('click', deleteFromLibrary);
-                
+            //if the liked song button is available (user is conn to spotify)
+          
+            if(likedSongButton){
+                if(data.songSaved[0]){
+                    console.log("song Saved");
+                    likedSongButtonImage.src =  '/images/spotifyHeartLiked.svg';
+                    likedSongButton.removeEventListener('click', addToLibrary);
+                    likedSongButton.addEventListener('click', deleteFromLibrary);
+                    
+                }
+                else{
+                    likedSongButtonImage.src =  '/images/spotifyHeartUnliked.svg';
+                    likedSongButton.removeEventListener('click', deleteFromLibrary);
+                    likedSongButton.addEventListener('click', addToLibrary);
+    
+                }
             }
-            else{
-                likedSongButtonImage.src =  '/images/spotifyHeartUnliked.svg';
-                likedSongButton.removeEventListener('click', deleteFromLibrary);
-                likedSongButton.addEventListener('click', addToLibrary);
-
-            }
+            
 
             //update the progress bar
             loadProgressBar(data.playbackInfo.progress_ms, data.playbackInfo.item.duration_ms);
 
         },
-        error: function() {
+        error: function(data) {
             console.log("could not load currewntly playing song");
+            console.log(data);
             
         }
 
@@ -116,48 +127,66 @@ function deleteFromLibrary(){
 
 
     var url = "/spotifyController/deleteFromLib"; //not sure this is good
+    if(songid != ""){
+        console.log("song is not null");
 
-    $.ajax({
-        type: 'POST',
-        url: url,
-        data: {"songid": songid},
-        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-        success: function (data) {
-            console.log("Song removed form lib" + songid);
+        
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: {"songid": songid},
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+            success: function (data) {
+                console.log("Song removed form lib" + songid);
 
-            var modal = document.getElementById("queueConfirmModal");
+                var modal = document.getElementById("queueConfirmModal");
 
-            $("h5").html("Song Removed from Library");
+                $("h5").html("Song Removed from Library");
 
-            likedSongButtonImage.src =  '/images/spotifyHeartUnliked.svg';
+                likedSongButtonImage.src =  '/images/spotifyHeartUnliked.svg';
 
-            likedSongButton.removeEventListener('click', deleteFromLibrary);
-            likedSongButton.addEventListener('click', addToLibrary);
+                likedSongButton.removeEventListener('click', deleteFromLibrary);
+                likedSongButton.addEventListener('click', addToLibrary);
 
-            modal.style.display = "block";
+                modal.style.display = "block";
 
-            setTimeout(function(){
-                modal.style.display = "none";
-            }, 3000);
-               
-            
-        },
-        error: function() {
-            console.log("fail");
-            $("h5").html("Failed to remove song");
+                setTimeout(function(){
+                    modal.style.display = "none";
+                }, 3000);
+                
+                
+            },
+            error: function() {
+                console.log("fail");
+                $("h5").html("Failed to remove song");
 
-            var modal = document.getElementById("queueConfirmModal");
-            modal.style.display = "block";
-            //popup.classList.toggle("show");
+                var modal = document.getElementById("queueConfirmModal");
+                modal.style.display = "block";
+                //popup.classList.toggle("show");
 
-            setTimeout(function(){
-                modal.style.display = "none";
-            }, 3000);
+                setTimeout(function(){
+                    modal.style.display = "none";
+                }, 3000);
 
-            $("h5").html("Song added to queue");
-        }
+            }
 
-    });
+        });
+    }
+    else{
+        console.log("song is null");
+
+        $("h5").html("Cannot save local files");
+
+        var modal = document.getElementById("queueConfirmModal");
+        modal.style.display = "block";
+        //popup.classList.toggle("show");
+
+        setTimeout(function(){
+            modal.style.display = "none";
+        }, 3000);
+
+        
+    }
 
 }
 
