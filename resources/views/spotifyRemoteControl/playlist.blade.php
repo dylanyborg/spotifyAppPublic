@@ -1,4 +1,5 @@
 <x-spotify-layout>
+
     <input type="hidden" name="playlistid" id="playlistid" value=" {{$playlist->id}}" >
     <div class=" bg-black text-white">
         <div>

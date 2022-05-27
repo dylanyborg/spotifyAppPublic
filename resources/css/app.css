@@ -3,7 +3,6 @@
 @import 'tailwindcss/utilities';
 
 .queueButton {
-    font-size: 10px;
     background-color: #cf7e04; /* orange */
     border: none;
     color: white;
@@ -20,12 +19,9 @@
     /*margin-bottom: 10%;*/
 }
 
-.listOfSongs td, th {
-padding: 8px;
-}
-
 .listOfSongs tr {
     background-color: #191414;
+    height: 75px;
 }
 
 .listOfSongs p {
@@ -57,10 +53,10 @@ color: white;
     margin-bottom: 5px;
     left: 0;
     right: 0;
-    bottom: 13%;
+    bottom: 21%;
     z-index: 1;
     width: 95%;
-    height: 7%;
+    height: 50px;
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
     border-radius: 25px;
@@ -81,13 +77,42 @@ color: white;
 
 }
 
+.largeModal {
+    display: none;
+    position: fixed;
+    margin: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    width: 100%;
+    height: 99vh;
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    border-radius: 25px;
+    color:white;
+}
+
+.largeModal-content {
+    background-color: #191414;
+    /* margin: 5% auto; */
+    padding: 5px;
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    border: 7px solid rgb(65, 62, 62);
+    border-radius: 25px;
+    line-height: 100%;
+    z-index: 4;
+}
+
 .footer {
     position: fixed;
     z-index: 1;
     bottom: 0;
     display: flex;
     width: 100%;
-    height: 13%;
+    height: 20%;
     flex-direction: column;
     
 }
@@ -102,7 +127,7 @@ color: white;
 }
 
 .songInfo {
-    height: 97%; 
+    height: 92%; 
     display: flex;
     align-items: stretch;
     max-width: 100vh;
@@ -110,24 +135,26 @@ color: white;
 
 .smallAlbumArt {
     max-width: 15%;
+    margin-top: auto;
+    margin-bottom: auto;
   }
 
-    .smallAlbumArt img {
-        max-width: 100%;
-        max-height: 100%;
-        
-        padding: 25%;
-        
-    }
+.smallAlbumArt img {
+    max-width: 100%;
+    max-height: 100%;
+    
+    padding: 25%;
+    
+}
 
-    .songName {
-        flex-grow: 3;
-        width: 60%;
-        text-align: center;
-        color: #ffffff;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
+.songName {
+    flex-grow: 3;
+    width: 60%;
+    text-align: center;
+    color: #ffffff;
+    margin-top: auto;
+    margin-bottom: auto;
+}
 
 .progressBarOutline {
     background-color: #cc9a50;
@@ -135,32 +162,34 @@ color: white;
     width: 100%;
 }
 
-    .progressBar {
-        height: 7px;
-        width: 15%;
-        background-color: #cf7e04;
-    }
+.progressBar {
+    height: 7px;
+    width: 15%;
+    background-color: #cf7e04;
+}
 
 
-    .spotifyNavBar{
-        background-color: white;
-        height: 35%;
-        bottom: 0;
-        align-self: flex-end;
-        width: 100%;
-        margin-top: auto;
-    }
+.spotifyNavBar{
+    background-color: #191414;
+    height: 50%;
+    bottom: 0;
+    align-self: flex-end;
+    width: 100%;
+    margin-top: auto;
+}
 
-    .footerSpacer {
-        height: 13vh;
-    }
+.footerSpacer {
+    height: 13vh;
+}
 
-    .playlistTitle {
-        position: sticky;
-        top: 0;
-        background-color: #cf7e04;
-        text-align: center;
-        font-size: medium;
-        z-index: 51;
+.playlistTitle {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    background-color: #cf7e04;
+    text-align: center;
+    font-size: medium;
+    z-index: 2;
+    height: 30px;
 
-      }
+}

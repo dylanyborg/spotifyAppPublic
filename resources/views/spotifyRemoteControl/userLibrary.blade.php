@@ -2,12 +2,9 @@
     
 
     <!-- modal popup -->
-    <div id="queueConfirmModal" class ="modal">
+    <x-modal-popup/>
 
-        <div class="modal-content">
-            <h5 class=" text-center"> Song added to queue </h5>
-        </div>
-    </div>
+
 
     <x-song-table :currentTracks="$tracks">
         <x-slot name="title">
