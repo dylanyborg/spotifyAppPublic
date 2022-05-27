@@ -780,8 +780,8 @@ select {
 .w-6 {
   width: 1.5rem;
 }
-.w-1\/5 {
-  width: 20%;
+.w-10 {
+  width: 2.5rem;
 }
 .w-1\/4 {
   width: 25%;
@@ -798,20 +798,20 @@ select {
 .w-32 {
   width: 8rem;
 }
+.w-1\/5 {
+  width: 20%;
+}
 .w-8 {
   width: 2rem;
-}
-.w-10 {
-  width: 2.5rem;
 }
 .max-w-7xl {
   max-width: 80rem;
 }
-.max-w-6xl {
-  max-width: 72rem;
-}
 .max-w-xl {
   max-width: 36rem;
+}
+.max-w-6xl {
+  max-width: 72rem;
 }
 .flex-1 {
   flex: 1 1 0%;
@@ -964,6 +964,14 @@ select {
   --tw-bg-opacity: 1;
   background-color: rgb(0 0 0 / var(--tw-bg-opacity));
 }
+.bg-orange-600 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(234 88 12 / var(--tw-bg-opacity));
+}
+.bg-slate-800 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 41 59 / var(--tw-bg-opacity));
+}
 .bg-indigo-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(238 242 255 / var(--tw-bg-opacity));
@@ -975,14 +983,6 @@ select {
 .bg-gray-800 {
   --tw-bg-opacity: 1;
   background-color: rgb(31 41 55 / var(--tw-bg-opacity));
-}
-.bg-orange-600 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(234 88 12 / var(--tw-bg-opacity));
-}
-.bg-slate-800 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(30 41 59 / var(--tw-bg-opacity));
 }
 .fill-current {
   fill: currentColor;
@@ -1269,14 +1269,10 @@ select {
     display: block;
     /*margin-bottom: 10%;*/
 }
-.listOfSongs td, th {
-/* padding: 3px 8px 3px 5px;*/
-}
 .listOfSongs tr {
-background-color: #191414;
-height: 75px;
+    background-color: #191414;
+    height: 75px;
 }
-
 .listOfSongs p {
 margin: 0px;
 font-size: 15px;
@@ -1292,7 +1288,7 @@ color: white;
 
 }
 .wideCell {
-    width: 80%;
+    width: 85%;
 }
 .modal {
     display: none;
@@ -1323,34 +1319,32 @@ color: white;
     
 
 }
-
 .largeModal {
-  display: none;
-  position: fixed;
-  margin: auto;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 3;
-  width: 100%;
-  height: 99vh;
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-  border-radius: 25px;
-  color:white;
+    display: none;
+    position: fixed;
+    margin: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    width: 100%;
+    height: 99vh;
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    border-radius: 25px;
+    color:white;
 }
-
 .largeModal-content {
-  background-color: #191414;
-  /* margin: 5% auto; */
-  padding: 5px;
-  margin: auto;
-  width: 100%;
-  height: 100%;
-  border: 7px solid rgb(65, 62, 62);
-  border-radius: 25px;
-  line-height: 100%;
-  z-index: 4;
+    background-color: #191414;
+    /* margin: 5% auto; */
+    padding: 5px;
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    border: 7px solid rgb(65, 62, 62);
+    border-radius: 25px;
+    line-height: 100%;
+    z-index: 4;
 }
 .footer {
     position: fixed;
@@ -1360,11 +1354,10 @@ color: white;
     width: 100%;
     height: 20%;
     flex-direction: column;
-        
     
 }
 .currentlyPlaying {
-    background-color: #191414;
+    background-color: grey;
     height: 65%;
     width: 100%;
     border-radius: 25px 25px 0px 0px;
@@ -1376,7 +1369,6 @@ color: white;
     display: flex;
     align-items: stretch;
     max-width: 100vh;
-    
 }
 .smallAlbumArt {
     max-width: 15%;
@@ -1384,58 +1376,51 @@ color: white;
     margin-bottom: auto;
   }
 .smallAlbumArt img {
-        max-width: 100%;
-        max-height: 100%;
-        
-        padding: 25%;
-        
-        
-    }
+    max-width: 100%;
+    max-height: 100%;
+    
+    padding: 25%;
+    
+}
 .songName {
-        flex-grow: 3;
-        width: 60%;
-        text-align: center;
-        color: #ffffff;
-        margin-top: auto;
-        margin-bottom: auto;
-    }
+    flex-grow: 3;
+    width: 60%;
+    text-align: center;
+    color: #ffffff;
+    margin-top: auto;
+    margin-bottom: auto;
+}
 .progressBarOutline {
     background-color: #cc9a50;
     border-radius: 2px;
     width: 100%;
 }
 .progressBar {
-        height: 7px;
-        width: 15%;
-        background-color: #ad6b08;
-    }
-.spotifyNavBar{
-        background-color: #191414;
-        height: 50%;
-        bottom: 0;
-        align-self: flex-end;
-        width: 100%;
-        margin-top: auto;
-    }
-.footerSpacer {
-        height: 20vh;
-    }
-.playlistTitle {
-        position: -webkit-sticky;
-        position: sticky;
-        top: 0;
-        background-color: #cf7e04;
-        text-align: center;
-        font-size: medium;
-        z-index: 2;
-        height: 30px;
-      }
-.scrollingText {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+    height: 7px;
+    width: 15%;
+    background-color: #cf7e04;
 }
-.scrollingText::-webkit-scrollbar {
-  display: none;
+.spotifyNavBar{
+    background-color: #191414;
+    height: 50%;
+    bottom: 0;
+    align-self: flex-end;
+    width: 100%;
+    margin-top: auto;
+}
+.footerSpacer {
+    height: 13vh;
+}
+.playlistTitle {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    background-color: #cf7e04;
+    text-align: center;
+    font-size: medium;
+    z-index: 2;
+    height: 30px;
+
 }
 .hover\:border-gray-300:hover {
   --tw-border-opacity: 1;
