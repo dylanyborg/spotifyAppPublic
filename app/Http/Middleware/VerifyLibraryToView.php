@@ -29,6 +29,8 @@ class VerifyLibraryToView
             //else show the user liub
         //else show the host lib
 
+        //dd($user->party->hideHostLibrary);
+
         if($user->party->hideHostLibrary){
             if (!isset($user->spotifyUserAccessToken)) {
                 //no party or view
@@ -37,15 +39,16 @@ class VerifyLibraryToView
             session(['spotifyApiUserId' => Auth::id()]);
         }
         //else the host lib can be viewed.
-        //check if the user has atleast a spotify account to use
+        //do nothing else
 
-        //if the user has not connected to spotify
+        /*if the user has not connected to spotify
         if (!isset($user->spotifyUserAccessToken)) {
             //user can only search for songs
             return redirect()->route('search.index');
             
             
         }
+        */
         //else make the api the user
 
 

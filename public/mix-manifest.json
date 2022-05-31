@@ -1,4 +1,6 @@
 {
     "/js/app.js": "/js/app.js",
+    "/js/footer.js": "/js/footer.js",
+    "/js/spotifyController.js": "/js/spotifyController.js",
     "/css/app.css": "/css/app.css"
 }

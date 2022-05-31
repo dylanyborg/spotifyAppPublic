@@ -39,110 +39,78 @@ Route::controller(SpotifyController::class)->group(function () {
     Route::get('/spotifyAuth', 'login')->name('spotifyAuth');
 })
 */
-Route::controller(SpotifyController::class)->group(function() {
-    Route::get('/spotifyAuth', 'login')->name('spotifyAuth');
-    Route::get('/callback', 'callback');
+Route::middleware('auth')->group(function(){
+    Route::controller(SpotifyController::class)->group(function() {
+        Route::get('/spotifyAuth', 'login')->name('spotifyAuth');
+        Route::get('/callback', 'callback');
 
-    Route::get('spotifyController/userLibrary', 'loadUserLibrary')
-        ->middleware(['auth', 'spotifyParty', 'spotifyLibAccess'])
-        ->name('userLibrary.show');
-    
-    Route::post('/removeSpotifyAccount', 'removeSpotifyAccount')
-        ->name('spotifyAccount.delete');
+        Route::get('spotifyController/userLibrary', 'loadUserLibrary')
+            ->middleware(['spotifyParty', 'spotifyLibAccess'])
+            ->name('userLibrary.show');
+        
+        Route::post('/removeSpotifyAccount', 'removeSpotifyAccount')
+            ->name('spotifyAccount.delete');
 
-    Route::post('/spotifyController/userLibrary/queue', 'queueSong')
-        ->name('queueTrack');
-    Route::post('/spotifyController/userLibrary/fetchMoreSongs', 'fetchMoreSongs')
-        ->name('fetchMoreSongs');
+        Route::post('/spotifyController/userLibrary/queue', 'queueSong')
+            ->name('queueTrack');
+        Route::post('/spotifyController/userLibrary/fetchMoreSongs', 'fetchMoreSongs')
+            ->name('fetchMoreSongs');
 
-    Route::get('/spotifyController/search', 'search')
-        ->middleware(['spotifyParty'])->name('search.index');
+        Route::get('/spotifyController/search', 'search')
+            ->middleware(['spotifyParty'])->name('search.index');
 
-    Route::get('/spotifyController/artist/{artistid}', 'getArtist')
-        ->name('artist.show');
-    Route::get('/spotifyController/album/{albumid}', 'getAlbum')
-        ->name('album.show');
+        Route::get('/spotifyController/artist/{artistid}', 'getArtist')
+            ->middleware(['spotifyParty'])
+            ->name('artist.show');
+        Route::get('/spotifyController/album/{albumid}', 'getAlbum')
+            ->middleware(['spotifyParty'])
+            ->name('album.show');
 
-    Route::get('/spotifyController/playlists', 'getPlaylists')
-        ->name('playlists.index');
-    Route::get('/spotifyController/playlist/{playlistid}',  'fetchPlaylist')
-        ->name('playlist.show');
-    Route::post('/spotifyController/fetchMoreSongsForPlaylist',  'fetchMoreTracksForPlaylist');
+        Route::get('/spotifyController/playlists', 'getPlaylists')
+            ->middleware(['spotifyParty', 'spotifyLibAccess'])
+            ->name('playlists.index');
+        Route::get('/spotifyController/playlist/{playlistid}',  'fetchPlaylist')
+            ->middleware(['spotifyParty', 'spotifyLibAccess'])
+            ->name('playlist.show');
+        Route::post('/spotifyController/fetchMoreSongsForPlaylist',  'fetchMoreTracksForPlaylist');
 
-    Route::post('/spotifyController/deleteFromLib', 'deleteFromTracks');
-    Route::post('/spotifyController/userLibrary/addToLib', 'addToTracks')
-        ->name('addToLib');
+        Route::post('/spotifyController/deleteFromLib', 'deleteFromTracks');
+        Route::post('/spotifyController/userLibrary/addToLib', 'addToTracks')
+            ->name('addToLib');
 
-    Route::post('/spotifyController/refreshPlaybackInfo', 'refreshPlaybackInfo');
+        Route::post('/spotifyController/refreshPlaybackInfo', 'refreshPlaybackInfo');
 
-    Route::get('/spotifyController/swapLibrary', 'swapLib')
-        ->name('swapLib');
+        Route::get('/spotifyController/swapLibrary', 'swapLib')
+            ->middleware(['spotifyParty', 'spotifyLibAccess'])
+            ->name('swapLib');
+
+    });
+
+    Route::controller(PartyController::class)->group(function() {
+        //set the party join named route before the resource base routes
+        Route::post('/dashboard/party/join', 'join')
+        ->name('party.join');
+
+        Route::post('/dashboard/party/leave',  'leave')
+        ->name('party.leave');
+
+        //use middleware to make sure the user is a host
+        Route::post('/dashboard/party/lock', 'lock')
+        ->name('party.lock');
+
+        //party resource controller
+    });
+
+    Route::resource('/dashboard/party', PartyResourceController::class);
 
 });
 
-//function for authorizing spotify account
-//Route::get('/spotifyAuth', [SpotifyController::class, 'login'])->name('spotifyAuth');
-
-//Route::get('/callback', [SpotifyController::class, 'callback']);
-
-//remove spotify account
-//Route::post('/removeSpotifyAccount', [SpotifyController::class, 'removeSpotifyAccount'])
-//->name('spotifyAccount.delete');
-
-//spotify web api call functions
-//Route::get('/spotifyController/userLibrary', [SpotifyController::class, 'loadUserLibrary'])
-//->middleware(['auth', 'spotifyParty', 'spotifyLibAccess'])->name('userLibrary.show');
-
-//Route::post('/spotifyController/userLibrary/queue', [SpotifyController::class, 'queueSong'])
-//->name('queueTrack');
-
-/*
-search spotify routes
-
-*/
-//Route::get('/spotifyController/search', [SpotifyController::class, 'search'])
-//->middleware(['spotifyParty'])->name('search.index');
-
-//get artist
-//Route::get('/spotifyController/artist/{artistid}', [SpotifyController::class, 'getArtist'])
-//->name('artist.show');
-
-//Route::get('/spotifyController/album/{albumid}', [SpotifyController::class, 'getAlbum'])
-//->name('album.show');
-
-//playlists
-//Route::get('/spotifyController/playlists', [SpotifyController::class, 'getPlaylists'])
-//->name('playlists.index');
-
-//Route::get('/spotifyController/playlist/{playlistid}', [SpotifyController::class, 'fetchPlaylist'])
-//->name('playlist.show');
 
 
-//Route::post('/spotifyController/deleteFromLib', [SpotifyController::class, 'deleteFromTracks']);
 
-//Route::post('/spotifyController/userLibrary/addToLib', [SpotifyController::class, 'addToTracks']);
 
-//Route::post('/spotifyController/userLibrary/addToLib', [SpotifyController::class, 'addToTracks'])
-//->name('addToLib');
 
-//Route::post('/spotifyController/refreshPlaybackInfo', [SpotifyController::class, 'refreshPlaybackInfo']);
-/*
-    Party routes
-*/
 
-//set the party join named route before the resource base routes
-Route::post('/dashboard/party/join', [PartyController::class, 'join'])
-->name('party.join');
-
-Route::post('/dashboard/party/leave', [PartyController::class, 'leave'])
-->name('party.leave');
-
-//use middleware to make sure the user is a host
-Route::post('/dashboard/party/lock', [PartyController::class, 'lock'])
-->name('party.lock');
-
-//party resource controller
-Route::resource('/dashboard/party', PartyResourceController::class);
 
 //create a party
 //Route::resource('dashboardparty/')
