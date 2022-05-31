@@ -7,7 +7,7 @@
                 <img src="{{ asset('images/Spotify_Icon_RGB_Green.png')}}">
             </div>
 
-            <div class="songName" id="songInfo" onclick="showLargeModal()">
+            <div class="songName" id="songInfo">
                 <p id="songName" class="truncate text-base"> {{ $currentSong->item->name }} </p> 
                 <p id="songArtist" class="truncate text-sm"> {{$currentSong->item->artists[0]->name}} &#8226 {{$currentSong->item->album->name}}  </p>
             </div>

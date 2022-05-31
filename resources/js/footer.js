@@ -44,42 +44,34 @@ function msToMinutesSeconds(millis){
 
 function loadProgressBar(progress_ms, duration_ms){
 
-    var timeLeftMS = duration_ms - progress_ms;
 
     var percentageLeft = (progress_ms / duration_ms) * 100;
     var percentageOfOneSec = (1000 / duration_ms) * 100;
 
-    var percentageLeftTruncated = Math.trunc(percentageLeft);
-
-   
     var progressElement = document.getElementById('progressBar');
     var largeProgressBarElem = document.getElementById('largeProgressBar');
 
+    //track progress and duration element
     var largePlaybackProgress = document.getElementById('largeTimePassed');
-
-    //update the total playtime of the song for largePlaybackView
     var largePlaybackDuration = document.getElementById('largeDuration');
-    //convert duration to minuites:seconds
-    msToMinutesSeconds(duration_ms);
-
     largePlaybackDuration.innerHTML = msToMinutesSeconds(duration_ms);
 
 
     //set the intiial time progressed
     //can use function but i need seconda and minutes sepearte
-    var progressToSeconds = progress_ms / 1000;
-    var minutes = progressToSeconds / 60;
-    var truncMinutes = Math.trunc(minutes);
-    var seconds = Math.trunc(progressToSeconds % 60);
+    //var progressToSeconds = progress_ms / 1000;
+    //var minutes = progressToSeconds / 60;
+    //var truncMinutes = Math.trunc(minutes);
+    //var seconds = Math.trunc(progressToSeconds % 60);
 
-    var timePassedFormatted = truncMinutes + ":" + seconds;
+    var minutes = Math.floor(progress_ms/60000);
+    var seconds = ((progress_ms % 60000) / 1000).toFixed(0);
 
-    largePlaybackProgress.innerHTML = timePassedFormatted;
+   // var timePassedFormatted = truncMinutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+
+    largePlaybackProgress.innerHTML = minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
     
-
     var intervalid = setInterval(move, 1000);
-
-    console.log(percentageOfOneSec);
 
     function move(){
         if(percentageLeft >= 100){
@@ -97,24 +89,23 @@ function loadProgressBar(progress_ms, duration_ms){
             //update the remaingin time by one second
             //if the seconds is over 60, a minute needs updating
             if(seconds >= 59){
-                truncMinutes ++;
-                //set seconds to 0
+                minutes ++;
                 seconds = 0;
-                //save the time
             }
             else{
                 //add one second
                 seconds++;
             }
-            timePassedFormatted = truncMinutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+            //timePassedFormatted = minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
 
-            largePlaybackProgress.innerHTML = timePassedFormatted;
+            largePlaybackProgress.innerHTML = minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
             
             
         }
     }
 }
-
+//function makes AJAX call to spotifyController.refreshPlaybackInfo()
+    //updates both the small and large playback views, calls loadProgressBar()
 function fetchPlayingTrack(){
     //run an ajax call to the spotify controller to fetch the playing song
     //if successful, update the hidden input values
@@ -161,7 +152,6 @@ function fetchPlayingTrack(){
                     artistString = artistString + artist.name + ", ";
                 }
             });
-            //add to innerhtlml
             largeModalArtistName.innerHTML = artistString;
 
             //update the large playback album art
@@ -170,27 +160,20 @@ function fetchPlayingTrack(){
 
             //update if the user likes the song
             //if the liked song button is available (user is conn to spotify)
-          
             if(likedSongButton){
                 if(data.songSaved[0]){
                     console.log("song Saved");
                     likedSongButtonImage.src =  '/images/spotifyHeartLiked.svg';
                     likedSongButton.removeEventListener('click', addToLibrary);
                     likedSongButton.addEventListener('click', deleteFromLibrary);
-                    
                 }
                 else{
                     likedSongButtonImage.src =  '/images/spotifyHeartUnliked.svg';
                     likedSongButton.removeEventListener('click', deleteFromLibrary);
                     likedSongButton.addEventListener('click', addToLibrary);
-    
                 }
             }
-            
-            
-
             //update the progress bar
-            
             loadProgressBar(data.playbackInfo.progress_ms, data.playbackInfo.item.duration_ms);
 
         },
@@ -204,6 +187,7 @@ function fetchPlayingTrack(){
 
 }
 
+//function to delete the currently playing song from users lib
 function deleteFromLibrary(){
     //save the song id to change
     var songid = $(this).data('id');
@@ -247,7 +231,6 @@ function deleteFromLibrary(){
 
                 var modal = document.getElementById("queueConfirmModal");
                 modal.style.display = "block";
-                //popup.classList.toggle("show");
 
                 setTimeout(function(){
                     modal.style.display = "none";
@@ -264,7 +247,6 @@ function deleteFromLibrary(){
 
         var modal = document.getElementById("queueConfirmModal");
         modal.style.display = "block";
-        //popup.classList.toggle("show");
 
         setTimeout(function(){
             modal.style.display = "none";
@@ -275,6 +257,9 @@ function deleteFromLibrary(){
 
 }
 
+//function makes an jaax call to the addToLib route
+    //adds a song to the current users library
+    //on success, displays a confirmation message and changes the heart
 function addToLibrary(){
 
     //check if the song is already added
@@ -331,12 +316,10 @@ function addToLibrary(){
 
 }
 
+//data for the large playback view is updated at same time as small playback view
 function showLargeModal() {
     console.log('displayting song view');
     var largeSongView = document.getElementById("largeSongView");
-    //info will be automatically updated at same time the fotter is?
-    //start the song name scroll
-
     largeSongView.style.display = "block";
     scrollSongName();
 }
@@ -346,6 +329,7 @@ function hideLargeSongView() {
     largeSongView.style.display = "none";
 }
 
+//function to scroll the name of the song, if it doesnt fit on one line
 function scrollSongName() {
     console.log("scrollingText in beginning of function");
     var modalSongNameElem = document.getElementById("largeModalSongName");
@@ -365,8 +349,7 @@ function scrollSongName() {
         var intervalid = setInterval(move, 50);
         var i = 0;
         function move() {
-            //console.log(document.getElementById("largeSongView").style.display);
-            //if the element is hidden, end the interval
+            //if the element is hidden, end the interval: no need to scroll
             if(document.getElementById("largeSongView").style.display == "none"){
                 console.log("stopping scroll, playback view hidden");
                 clearInterval(intervalid);
@@ -374,8 +357,10 @@ function scrollSongName() {
             //if at end
             if( (document.getElementById("largeModalSongName").scrollLeft + clientWidth) == totalScrollWidth){
                 console.log("scrolled to end");
-                //clear the interval
+                //clear the scroll interval
                 clearInterval(intervalid);
+
+                //after 4 seconds, scroll to the beginning
                 setTimeout(function(){
                     modalSongNameElem.scroll({
                         left:0,
@@ -384,26 +369,8 @@ function scrollSongName() {
                     console.log("waited");
                     setTimeout(scrollSongName, 4000);
                 }, 4000);
-
-                
-
-                
-
-                //wait a second
-                //scroll back top beginning
-                //wait a second
-                //call the function again
-
-                //wait a second
-               
-                //reset the scroll
-                
-                //clearInterval(intervalid);
-                //scroll backwards
-                //scrollBackwards();
-                
             }
-            else{
+            else{ //scroll to the right
                 console.log("scrolling");
                 modalSongNameElem.scroll({
                     left:i,
@@ -411,47 +378,6 @@ function scrollSongName() {
                 });
                 i = i + 1;
             }
-            
-            
         }
-
-        //console.log("done with scrolliogn left");
-
-    }
-    //else scroll until the end of the scroll box
-    //(scrollBarPos + clientWidth == totalScrollWidth)
-
-
-    console.log(totalScrollWidth);
-
-    console.log(scrollBarPosition);
-    console.log(clientWidth);
-    //if(!elemOverflow || elemOverflow === "visible")
-}
-/*
-function scrollBackwards() {
-    var modalSongNameElem = document.getElementById("largeModalSongName");
-    //var elemOverflow = modalSongNameElem.style.overflow;
-
-    var totalScrollWidth = modalSongNameElem.scrollWidth;
-
-    var scrollBarPosition = modalSongNameElem.scrollLeft;
-
-    var clientWidth = modalSongNameElem.clientWidth;
-
-    var intervalid = setInterval(move, 100);
-    var i = 0;
-
-    function move() {
-        if(scrollBarPosition == 0){
-            clearInterval(intervalid);
-            scrollSongName();
-        }
-        modalSongNameElem.scroll({
-            left: -i,
-            behavior: 'smooth'
-        });
-        i = i + 1;
     }
 }
-*/

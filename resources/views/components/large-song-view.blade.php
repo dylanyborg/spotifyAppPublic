@@ -1,7 +1,7 @@
 <div id="largeSongView" class="largeModal">
         <div class="largeModal-content">
             <div style=" display: flex; justify-content:space-between; width: 100%; height:10%; color:white; font-size:20px; padding: 20px 20px 0 20px; ">
-                <div id="closeLargeSongView" onclick="hideLargeSongView()">
+                <div id="closeLargeSongView">
                     ^
                 </div>
                 <div>

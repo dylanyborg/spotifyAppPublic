@@ -20,11 +20,7 @@ class PartyResourceController extends Controller
     public function index()
     {
         //search to see if the current user is in a parties
-        $userid = Auth::id();
-
-        $user = User::find($userid);
-
-        $party = $user->party;
+        $party = Auth::user()->party;
 
         if(!$party){
             //user is not in a party
@@ -32,14 +28,10 @@ class PartyResourceController extends Controller
             return view('dashboard.party.create');
         }
         else{
-            //user is in a party, 
-            //pass it to a view to show poarty info
-            //and allow user to leave party
+            //user is in a party, display it
             return redirect()->route('party.show', ['party' => $party->id]);
 
         }
-        //dd($user->party);
-        //return view('dashboard.party.create');
     }
 
     /**
@@ -102,7 +94,6 @@ class PartyResourceController extends Controller
         //allow spotify top load the users library
         session(['spotifyApiUserId' => $userID]);       
         
-        //dd($party->id);
         //return the party page showing the info for this party
         return redirect()->route('party.show', ['party' => $party->id]);
         
@@ -115,10 +106,7 @@ class PartyResourceController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($party)
-    {
-        //use middleware to ensure someone is in a party before showing
-        //fetch the party form the db
-        
+    {        
         $party = Party::find($party);
 
         //if no party, go to party.create
@@ -160,7 +148,6 @@ class PartyResourceController extends Controller
      */
     public function update(Request $request, $partyid)
     {
-        //dd($partyid);
         //update the party info
             //name
             //password
@@ -183,8 +170,6 @@ class PartyResourceController extends Controller
             ]);
         }      
 
-        //dd($request->partyName, $request->password, $request->hideHostLib);
-
         $hideHostLib;
         if($request->hideHostLib == "2"){
             $hideHostLib = true; //we want to hide lib to party guests
@@ -194,7 +179,6 @@ class PartyResourceController extends Controller
         }
 
         //update the party with the correct info
-
         //if the party name has changed
         if($request->partyName != $party->partyName){
             $party->partyName = $request->partyName;
@@ -216,8 +200,6 @@ class PartyResourceController extends Controller
 
         //redirect to party.show
         return redirect()->route('party.show', ['party' => $party->id]);
-
-
     }
 
     /**
@@ -233,7 +215,5 @@ class PartyResourceController extends Controller
         //route to the create party page
         return redirect()->route('party.index');
 
-        
-        //dd($party);
     }
 }
