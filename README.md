@@ -7,3 +7,5 @@ Uses: <br>
 <a href="https://github.com/jwilsson/spotify-web-api-php"> -jwilsson/spotify-web-api-php v5.0 </a> <br>
 -PHP 8.0.2
 -Laravel sail to run project inside a docker container (running Ubuntu 18.04)
+
+<br> Plan on using AWS to run the website.
