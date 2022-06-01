@@ -24,8 +24,8 @@ class SpotifyController extends Controller
         if(Auth::check()){ //if user is logged in
         
             $session = new Session(
-                '1d53c77dcd0e4cb6b6191f74e2ce6c51',
-                '18e12cd385514d91a4d0aebb75e01423',
+                'CLIENT_ID',
+                'CLIENT_SECRET',
                 'http://localhost/callback'
             );
 
@@ -61,8 +61,8 @@ class SpotifyController extends Controller
         }
 
         $session = new Session(
-            '1d53c77dcd0e4cb6b6191f74e2ce6c51',
-            '18e12cd385514d91a4d0aebb75e01423',
+            'CLIENT_ID',
+            'CLIENT_SECRET',
             'http://localhost/callback'
         );
 
