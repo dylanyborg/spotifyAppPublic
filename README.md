@@ -1,6 +1,6 @@
 Spotify Party Controller
 
-Web-app that allows users to connect and listen to music from the Spotify catalogue together. One user hosts a party, and others may jpin said party and request a song to be added to the playback queue. Similiar to making a request to a DJ. Only now you dont need to ask, it can happen right form your mobile device. 
+Web-app that allows users to connect and listen to music from the Spotify catalogue together. One user hosts a party, and others may join the party and request a song to be added to the playback queue. Similiar to making a request to a DJ. Only now you dont need to ask, it can happen right form your mobile device. 
 
 Uses: <br> 
 -Laravel framework 9.2 <br>
